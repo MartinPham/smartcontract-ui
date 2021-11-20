@@ -1,4 +1,4 @@
-import { ReactElement, Fragment, forwardRef, useState, useCallback, useEffect } from 'react'
+import { ReactElement, Fragment, forwardRef, useState, useCallback, useEffect, MouseEvent } from 'react'
 import Autocomplete from '@mui/material/Autocomplete'
 import TextField from '@mui/material/TextField'
 import Box from '@mui/material/Box'
@@ -10,6 +10,10 @@ import CreateIcon from '@mui/icons-material/Create'
 import LoadingButton from '@mui/lab/LoadingButton'
 import LockIcon from '@mui/icons-material/Lock'
 import NumberFormat from 'react-number-format'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
+import Link from '@mui/material/Link'
+import { HistoryEntry } from 'types/History'
 
 interface NumberFormatComponentProps {
 	onChange: (event: { target: { name: string; value: string } }) => void;
@@ -98,7 +102,7 @@ const NumberTextField = ({
 							value={decimal}
 							onChange={event => {
 								setDecimal(event.target.value)
-								
+
 								triggerOnChange(number, event.target.value)
 							}}
 							InputProps={{
@@ -130,7 +134,9 @@ export const FunctionComposer = ({
 	isReading,
 	isWriting,
 	isLoggingIn,
-	canWrite
+	canWrite,
+	history, 
+	openHistoryEntry
 }: {
 	selectedChain: Chain,
 	functions: Function[],
@@ -149,8 +155,65 @@ export const FunctionComposer = ({
 	isWriting: boolean,
 	isLoggingIn: boolean,
 	canWrite: boolean,
+	history: HistoryEntry[],
+	openHistoryEntry: (entry: HistoryEntry) => void
 }) => {
+	const [historyAnchorEl, setHistoryAnchorEl] = useState<null | HTMLElement>(null)
+	const open = Boolean(historyAnchorEl)
+	const handleClick = (event: MouseEvent<HTMLElement>) => {
+		setHistoryAnchorEl(event.currentTarget)
+	};
+	const handleClose = () => {
+		setHistoryAnchorEl(null)
+	};
+
 	return (<>
+		<Menu
+			anchorEl={historyAnchorEl}
+			open={open}
+			onClose={handleClose}
+			onClick={handleClose}
+			PaperProps={{
+				style: {
+					maxHeight: 200
+				},
+				elevation: 0,
+				sx: {
+					overflow: 'visible',
+					filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+					mt: 1.5,
+					'& .MuiAvatar-root': {
+						width: 32,
+						height: 32,
+						ml: -0.5,
+						mr: 1,
+					},
+					'&:before': {
+						content: '""',
+						display: 'block',
+						position: 'absolute',
+						top: 0,
+						right: 14,
+						width: 10,
+						height: 10,
+						bgcolor: 'background.paper',
+						transform: 'translateY(-50%) rotate(45deg)',
+						zIndex: 0,
+					},
+				},
+			}}
+			transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+			anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+		>
+			{history && history.map((entry, index) => (
+				<MenuItem key={index} onClick={() => {
+					openHistoryEntry(entry)
+				}}>
+					{entry.function}
+				</MenuItem>
+			))}
+		</Menu>
+
 		<br />
 		<br />
 		<Autocomplete
@@ -159,7 +222,11 @@ export const FunctionComposer = ({
 			fullWidth
 			options={functions}
 			getOptionLabel={(option) => option.name}
-			renderInput={(params) => <TextField {...params} required label='Function' />}
+			renderInput={(params) => <TextField {...params} required label='Function' helperText={
+				history.length > 0 && <>
+					Or browse from <Link sx={{ cursor: 'pointer' }} onClick={handleClick}>your history</Link>
+				</>
+			} />}
 			value={func}
 			onChange={(_, newValue: Function | null) => {
 				onFuncChange(newValue)
@@ -168,6 +235,7 @@ export const FunctionComposer = ({
 			onInputChange={(_, newInputValue) => {
 				onTextChange(newInputValue)
 			}}
+
 		/>
 
 		{func && func.inputs.map((input) => (

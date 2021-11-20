@@ -22,7 +22,9 @@
     "clsx": "latest",
     "copy-to-clipboard": "^3.3.1",
     "immer": "^9.0.6",
+    "localforage": "^1.10.0",
     "loglevel": "^1.8.0",
+    "md5": "^2.3.0",
     "next": "latest",
     "notistack": "^2.0.3",
     "react": "latest",
@@ -37,6 +39,7 @@
     "prod": "next start"
   },
   "devDependencies": {
+    "@types/md5": "^2.3.1",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
