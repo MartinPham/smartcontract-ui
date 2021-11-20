@@ -38,6 +38,9 @@ self.addEventListener("install", event => {
       .then(cache => {
         return cache.addAll(CACHE_FILES);
       })
+      .catch(err => {
+        console.error('[SW] failed', err)
+      })
   );
 });
 

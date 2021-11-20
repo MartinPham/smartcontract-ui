@@ -29,64 +29,30 @@ import { ReadResult, WriteResult } from 'types/Result'
 import LinearProgress from '@mui/material/LinearProgress'
 
 export default function Page() {
-  const router = useRouter()
-
-
-
-
-  // Update URL, Address, Network followed by json query param
-  const [url, setUrl] = useState('')
-
-  useEffect(() => {
-    if (router.query.json) {
-      setUrl(router.query.json as string)
-    }
-  }, [
-    router.query.json
-  ])
-
-  useEffect(() => {
-    if (router.query.address) {
-      console.log('url set add')
-      setAddress(router.query.address as string)
-    }
-  }, [
-    router.query.address
-  ])
-
-  useEffect(() => {
-    if (router.query) {
-      console.log('url set args')
-      // const args = []
-      for (let key in router.query) {
-        if (key.startsWith('args.')) {
-          const argKey = key.substr(5)
-          if (argKey.length > 0) {
-            setFunctionArguments((draft: any) => {
-              draft[argKey] = router.query[key]
-            })
-          }
-        }
-      }
-    }
-  }, [
-    router.query
-  ])
-
-
-
-
-
-
-
   // snackbar
   const { enqueueSnackbar } = useSnackbar()
 
-  // handle w3
-  const w3React = useWeb3React<Web3Provider>()
-  const [selectedChain, selectChain] = useState<Chain | null | undefined>(null)
+  // Error feedback
+  const showError = useCallback((error) => {
+    console.error(error)
+    let message = ''
+    if (error['data'] && error['data']['message']) {
+      message = error['data']['message']
+    } else if (error['message']) {
+      message = error['message']
+    } else {
+      message = error as string
+    }
+    enqueueSnackbar(message, {
+      variant: "error",
+    })
+  }, [])
 
-  // global.w3React = w3React
+  // w3
+  const w3React = useWeb3React<Web3Provider>()
+  const [w3ReactInited, initW3React] = useState(false)
+  // global.w3 = w3React
+
   const [activatingConnector, setActivatingConnector] = useState(undefined)
   useEffect(() => {
     if (activatingConnector && activatingConnector === w3React.connector) {
@@ -100,47 +66,11 @@ export default function Page() {
   const triedEager = useEagerConnect()
   useInactiveListener(!triedEager || !!activatingConnector)
 
-  useEffect(() => {
-    if (w3React.active) {
-      console.warn('w3 ready', w3React.chainId, selectedChain?.name)
-
-      if (!selectedChain) {
-        const chain = chains.find(chain => chain.chainId == w3React.chainId)
-        if (chain) {
-          console.log('w3 select chain')
-          selectChain(chain)
-        }
-      }
-    }
-  }, [
-    selectedChain,
-    w3React.active,
-    w3React.chainId
-  ])
-
-  useEffect(() => {
-    if (router.query.network) {
-      const chain = chains.find(chain => String(chain.chainId) == router.query.network as string)
-      if (chain) {
-        console.log('url select chain')
-        selectChain(chain)
-
-        if (w3React.active && w3React.chainId && w3React.chainId !== chain.chainId) {
-          setTimeout(() => {
-            switchW3Chain(chain)
-          }, 1)
-        }
-      }
-    }
-  }, [
-    router.query.network,
-    w3React.active,
-    w3React.chainId
-  ])
-
 
   const switchW3Chain = useCallback(async (chain: Chain) => {
-    console.log('switch w3 chain')
+    if (!chain) return
+    console.log('switch w3 chain', chain)
+
     if (w3React.connector === network) {
       console.log('switch w3 chain on network');
 
@@ -158,8 +88,8 @@ export default function Page() {
               chainId
             }],
           })
-        } catch (error: any) {
-          if (error['code'] === 4902) {
+        } catch (switchError: any) {
+          if (switchError['code'] === 4902) {
             try {
               if (chain.rpc && chain.rpc.length > 0) {
                 await ethereum.request({
@@ -174,36 +104,70 @@ export default function Page() {
               } else {
                 throw new Error(`Chain ${chain.name} is not supported for now...`)
               }
-            } catch (error: any) {
-              showError(error)
+            } catch (addError: any) {
+              throw addError
             }
           } else {
-            throw error
+            throw switchError
           }
         }
       } else {
         throw new Error(`Unable to switch into ${chain.name}`)
       }
-
-
     }
   }, [
     w3React.connector
   ])
 
+  useEffect(() => {
+    if (w3React.active && w3React.chainId) {
+      if (!w3ReactInited) {
+        console.warn('w3 ready', w3React.chainId, w3React.connector)
+        initW3React(true)
+      }
+
+      console.warn('w3 update state', w3React.chainId, w3React.connector)
+      const chain = chains.find(chain => chain.chainId == w3React.chainId)
+      if (chain) {
+        console.log('w3.chainId -> set chain dropdown to', w3React.chainId)
+
+        selectChain(chain)
+      }
+    }
+  }, [
+    w3React.active,
+    w3React.chainId
+  ])
+
+
+  const router = useRouter()
 
   // handle JSON
-  const [json, setJson] = useState<any>({})
-  const [source, setSource] = useState('')
+  const [url, setUrl] = useState('')
+  useEffect(() => {
+    if (router.query.json) {
 
+      if (w3ReactInited) {
+        console.log('set urljson from url')
+        setUrl(router.query.json as string)
+      }
+    }
+  }, [
+    router.query.json,
+    w3ReactInited
+  ])
+
+  const [source, setSource] = useState('')
   useEffect(() => {
     if (url) {
       (async () => {
         try {
-
           const jsonContent = await (await fetch(url)).json()
 
+          console.log('url -> set source')
           setSource(url)
+
+          console.log('url -> set json')
           setJson(jsonContent)
         } catch (err) {
           showError(err)
@@ -217,6 +181,7 @@ export default function Page() {
   const readBrowsedFile = useCallback((event) => {
     const file = event.target.files?.item(0)
     if (file) {
+      console.log('file -> set source')
       setSource(file.name)
       const reader = new FileReader()
       reader.readAsText(file, "UTF-8")
@@ -224,7 +189,10 @@ export default function Page() {
         if (evt.target) {
           try {
             const jsonContent = JSON.parse(String(evt.target.result))
+
+            console.log('file -> set json')
             setJson(jsonContent)
+            toggleParamsLock(false)
           } catch (err) {
             showError(err)
           }
@@ -236,8 +204,10 @@ export default function Page() {
     }
   }, [])
 
+  const [json, setJson] = useState<any>(null)
   useEffect(() => {
-    if (json && w3React.active) {
+    if (json) {
+      console.log('json provided')
       if (json['abi']) {
         // truffle
         const newFunctions = []
@@ -247,7 +217,11 @@ export default function Page() {
             newFunctions.push(func)
           }
         }
+
+        console.log('json (truffle) -> set function list')
         setFunctions(newFunctions)
+
+        console.log('json (truffle) -> set abi')
         setAbi(json['abi'])
       } else if (typeof json === 'object' && json.length > 0 && json[0]['type']) {
         // array of functions
@@ -258,132 +232,190 @@ export default function Page() {
             newFunctions.push(func)
           }
         }
+
+
+        console.log('json (abi) -> set function list')
         setFunctions(newFunctions)
+
+        console.log('json (abi) -> set abi')
         setAbi(json)
       } else {
+        console.log('json (invalid) -> empty function list')
         setFunctions([])
+
+        console.log('json (invalid) -> empty abi')
         setAbi([])
       }
-      if (json['networks']) {
-        // truffle
-        for (let networkId in json['networks']) {
-          if (json['networks'][networkId]['address']) {
-            if (!router.query.network) {
+
+
+    }
+  }, [
+    json
+  ])
+
+  // chain
+  const [selectedChain, selectChain] = useState<Chain | null | undefined>(null)
+  const [chainSearchText, searchChain] = useState<string>('')
+  const [address, setAddress] = useState('')
+  const [paramsAreLocked, toggleParamsLock] = useState<boolean>(false)
+  useEffect(() => {
+    let shoudlLockParams = false
+
+
+
+    if (
+      router.query.network
+      || router.query.func
+      || router.query.address
+    ) {
+      shoudlLockParams = true
+    } else {
+      for (let key in router.query) {
+        if (key.startsWith('args.')) {
+          shoudlLockParams = true
+          break
+        }
+      }
+    }
+
+    if (shoudlLockParams) {
+      console.log('lock params')
+      toggleParamsLock(true)
+    }
+  }, [
+    router.query
+  ])
+
+  useEffect(() => {
+    if (w3ReactInited) {
+      if (paramsAreLocked) {
+        const chain = chains.find(chain => String(chain.chainId) == router.query.network)
+        if (chain) {
+          console.log('set network from url')
+
+          switchW3Chain(chain)
+            .catch(showError)
+
+        }
+      }
+    }
+  }, [
+    w3ReactInited,
+    paramsAreLocked,
+    router.query.network
+  ])
+
+  useEffect(() => {
+    if (!paramsAreLocked || !router.query.network) {
+      if (json) {
+        if (json['networks']) {
+          for (let networkId in json['networks']) {
+            if (json['networks'][networkId]['address']) {
               const chain = chains.find(chain => String(chain.chainId) == networkId)
               if (chain) {
-                console.log('json select chain')
-                selectChain(chain)
+                console.log('json (truffle) -> set network')
 
-                if (w3React.active && w3React.chainId && w3React.chainId !== chain.chainId) {
-                  setTimeout(() => {
-                    switchW3Chain(chain)
-                  }, 1)
-                }
-                // switchW3Chain(chain)
+                switchW3Chain(chain)
+                  .catch(showError)
+
+                return
               }
             }
-
-
-            if (!address || address === '0x') {
-              setAddress(json['networks'][networkId]['address'] as string)
-            }
-
-
-            break
           }
         }
       }
     }
   }, [
-    router.query.network,
-    selectedChain,
     json,
-    w3React.active,
-    w3React.chainId
+    paramsAreLocked,
+    router.query.network,
+    w3React.connector
   ])
 
 
-
-  // handle chain, address, function, args
-  const [chainSearchText, searchChain] = useState<string>('')
-  const [address, setAddress] = useState('0x')
-  // const [readContract, setReadContract] = useState<Contract | null>(null)
-  // const [writeContract, setWriteContract] = useState<Contract | null>(null)
-  const [functions, setFunctions] = useState<Function[]>([])
-  const [abi, setAbi] = useState<any[]>([])
-  const [selectedFunction, selectFunction] = useState<Function | null | undefined>(null)
-  const [functionSearchText, searchFunction] = useState<string>('')
-  const [functionArgs, setFunctionArguments] = useImmer<{ [name: string]: any }>({})
-  const contractIsReady = address && address.length === 42
-
-  // global.contract = contract
-
   useEffect(() => {
-    if (selectedChain && json) {
-      if (json['networks'] && json['networks'][String(selectedChain.chainId)]) {
-        if (!address || address === '0x') {
+    if (!paramsAreLocked || !router.query.address) {
+      if (selectedChain && json) {
+        if (json['networks'] && json['networks'][String(selectedChain.chainId)]) {
+          console.log('set address from selectedChain')
           setAddress(json['networks'][String(selectedChain.chainId)]['address'] as string)
         }
-
       }
     }
   }, [
-    address,
+    router.query.address,
+    paramsAreLocked,
     selectedChain,
     json
   ])
 
-  useEffect(() => {
-    if (router.query.func) {
-      if (functions.length > 0) {
-        const func = functions.find(f => f.name === router.query.func)
 
-        if (func) {
-          console.log('url set func')
-          selectFunction(func)
+
+  const [functions, setFunctions] = useState<Function[]>([])
+  const [selectedFunction, selectFunction] = useState<Function | null | undefined>(null)
+  const [functionSearchText, searchFunction] = useState<string>('')
+  const [functionArgs, setFunctionArguments] = useImmer<{ [name: string]: any }>({})
+  const [abi, setAbi] = useState<any[]>([])
+
+  useEffect(() => {
+    if (w3ReactInited) {
+      if (paramsAreLocked) {
+        if (router.query.func) {
+
+          if (functions.length > 0) {
+            const func = functions.find(f => f.name === router.query.func)
+
+            if (func) {
+              console.log('set function from url')
+              selectFunction(func)
+            }
+          }
         }
       }
     }
   }, [
+    w3ReactInited,
+    paramsAreLocked,
     functions,
     router.query.func
   ])
 
-  // useEffect(() => {
-  //   if (w3React && w3React.library && abi && contractIsReady) {
-  //     try {
-  //       if (isAddress(address)) {
-  //         console.warn('w3contract init')
-  //         const newReadContract = new Contract(
-  //           address,
-  //           abi,
-  //           w3React.library
-  //           // w3React.library.getSigner()
-  //         )
+  useEffect(() => {
+    if (w3ReactInited) {
+      if (paramsAreLocked) {
+        if (router.query.address) {
+          console.log('set address from url')
+          setAddress(router.query.address as string)
+        }
+      }
+    }
+  }, [
+    w3ReactInited,
+    paramsAreLocked,
+    router.query.address
+  ])
 
-  //         setReadContract(newReadContract)
-
-  //         const newWriteContract = new Contract(
-  //           address,
-  //           abi,
-  //           w3React.library.getSigner()
-  //         )
-
-  //         setWriteContract(newWriteContract)
-  //       } else {
-  //         console.error(`Invalid address ${address}`)
-  //       }
-
-  //     } catch (err) {
-  //       showError(err)
-  //     }
-
-  //   }
-  // }, [
-  //   w3React,
-  //   address,
-  //   abi
-  // ])
+  useEffect(() => {
+    if (router.query) {
+      if (paramsAreLocked) {
+        console.log('set args from url')
+        for (let key in router.query) {
+          if (key.startsWith('args.')) {
+            const argKey = key.substr(5)
+            if (argKey.length > 0) {
+              setFunctionArguments((draft: any) => {
+                draft[argKey] = router.query[key]
+              })
+            }
+          }
+        }
+      }
+    }
+  }, [
+    w3ReactInited,
+    paramsAreLocked,
+    router.query
+  ])
 
 
   // interactive with contract
@@ -392,21 +424,6 @@ export default function Page() {
   const [isReading, toggleReading] = useState<boolean>(false)
   const [isWriting, toggleWriting] = useState<boolean>(false)
   const [isLoggingIn, toggleLoggingIn] = useState<boolean>(false)
-
-  const showError = useCallback((error) => {
-    console.error(error)
-    let message = ''
-    if (error['data'] && error['data']['message']) {
-      message = error['data']['message']
-    } else if (error['message']) {
-      message = error['message']
-    } else {
-      message = error as string
-    }
-    enqueueSnackbar(message, {
-      variant: "error",
-    })
-  }, [])
 
   // read contract
   const read = useCallback(async () => {
@@ -568,9 +585,6 @@ export default function Page() {
     selectedFunction,
     functionArgs
   ])
-
-
-
   return (
     <>
       <Grid container component="main" sx={{ height: '100vh' }}>
@@ -615,28 +629,41 @@ export default function Page() {
               mt: 1,
               width: '100%'
             }}>
-              <SourceBrowser
-                onFileChange={readBrowsedFile}
 
-                source={source}
-                onSourceChange={setSource}
 
-                onUrlChange={setUrl}
-                onJsonChange={setJson}
+              {(w3ReactInited) ? <>
 
-                onError={showError}
-              />
+                <SourceBrowser
+                  onFileChange={readBrowsedFile}
 
-              <br />
-              <br />
+                  source={source}
+                  onSourceChange={setSource}
 
-              {(w3React && w3React.active) ? <>
+                  onUrlChange={url => {
+                    setUrl(url)
+
+                    toggleParamsLock(false)
+                  }}
+                  onJsonChange={jsonContent => {
+                    setJson(jsonContent)
+
+                    toggleParamsLock(false)
+                  }}
+
+                  onError={showError}
+                />
+
+                <br />
+                <br />
+
                 <ContractSelector
                   chain={selectedChain}
                   onChainChange={async (chain) => {
-                    selectChain(chain)
+                    // selectChain(chain)
 
                     switchW3Chain(chain as Chain)
+
+                    toggleParamsLock(false)
                   }}
 
                   text={chainSearchText}
@@ -646,30 +673,30 @@ export default function Page() {
                   onAddressChange={setAddress}
                 />
 
-                {contractIsReady && (
-                  <FunctionComposer
-                    functions={functions}
 
-                    func={selectedFunction}
-                    onFuncChange={selectFunction}
+                <FunctionComposer
+                  functions={functions}
 
-                    text={functionSearchText}
-                    onTextChange={searchFunction}
+                  func={selectedFunction}
+                  onFuncChange={selectFunction}
 
-                    args={functionArgs}
-                    setArgs={setFunctionArguments}
+                  text={functionSearchText}
+                  onTextChange={searchFunction}
 
-                    read={read}
-                    isReading={isReading}
+                  args={functionArgs}
+                  setArgs={setFunctionArguments}
 
-                    write={write}
-                    isWriting={isWriting}
-                    canWrite={w3React && w3React.connector != network}
+                  read={read}
+                  isReading={isReading}
 
-                    login={login}
-                    isLoggingIn={isLoggingIn}
-                  />
-                )}
+                  write={write}
+                  isWriting={isWriting}
+                  canWrite={w3React && w3React.connector != network}
+
+                  login={login}
+                  isLoggingIn={isLoggingIn}
+                />
+
               </> : <>
                 <LinearProgress />
               </>}

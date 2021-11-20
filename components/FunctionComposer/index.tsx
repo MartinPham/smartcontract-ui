@@ -48,7 +48,7 @@ export const FunctionComposer = ({
       fullWidth
       options={functions}
       getOptionLabel={(option) => option.name}
-      renderInput={(params) => <TextField {...params} label="Function" />}
+      renderInput={(params) => <TextField {...params} required label="Function" />}
       value={func}
       onChange={(_, newValue: Function | null) => {
         onFuncChange(newValue)

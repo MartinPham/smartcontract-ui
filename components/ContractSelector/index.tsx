@@ -25,7 +25,7 @@ export const ContractSelector = ({
       fullWidth
       options={chains}
       getOptionLabel={(option) => option.name}
-      renderInput={(params) => <TextField {...params} label="Network" />}
+      renderInput={(params) => <TextField {...params} required label="Network" />}
       value={chain}
       onChange={(_, newValue: Chain | null) => {
         onChainChange(newValue)
