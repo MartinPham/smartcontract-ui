@@ -30,6 +30,7 @@ import LinearProgress from '@mui/material/LinearProgress'
 import { useHistory } from 'hooks/useHistory'
 import { HistoryEntry } from 'types/History'
 
+let w3Timeout = null
 
 export default function Page() {
 	// snackbar
@@ -103,6 +104,18 @@ export default function Page() {
 	const w3React = useWeb3React<Web3Provider>()
 	const [w3ReactInited, initW3React] = useState(false)
 	// global.w3 = w3React
+	useEffect(() => {
+		if(!w3ReactInited) {
+			w3Timeout = setTimeout(() => {
+				if(!w3ReactInited) {
+					console.warn('w3 timeout')
+					location.reload()
+				}
+			}, 5000)
+		}
+	}, [
+		w3ReactInited
+	])
 
 	const [activatingConnector, setActivatingConnector] = useState(undefined)
 	useEffect(() => {
