@@ -1,6 +1,20 @@
+
 {
   "contractName": "HelloWorld",
   "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        }
+      ],
+      "name": "Gifted",
+      "type": "event"
+    },
     {
       "anonymous": false,
       "inputs": [
@@ -26,6 +40,20 @@
       ],
       "name": "GreetedWithHints",
       "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address payable",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -115,17 +143,49 @@
       "stateMutability": "view",
       "type": "function",
       "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        }
+      ],
+      "name": "gift",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function",
+      "payable": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "ownerAddress",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "withdraw",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
   ],
   
-  
   "networks": {
-
     "322": {
       "events": {},
       "links": {},
-      "address": "0x1242677530a3CeBdF47746834b823a39e2493F28",
-      "transactionHash": "0x6f67373382cb395a974bb2ba385a77c52fa2361aa79665736113fb81d7478180"
+      "address": "0x24A4785d01655E8a504fAe7eeE287B112213C057",
+      "transactionHash": "0xef9d33269325cf53840dd677eed99184c0b573c58de4c939b9b7724fa1d18f81"
     }
   }
 }

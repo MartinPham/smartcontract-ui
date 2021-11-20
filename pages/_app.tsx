@@ -30,7 +30,9 @@ export default function App(props: MyAppProps) {
     () =>
       createTheme({
         palette: {
-          mode: prefersDarkMode ? 'dark' : 'light',
+          // mode: prefersDarkMode ? 'dark' : 'light',
+          // mode: 'light',
+          mode: 'dark',
         },
       }),
     [prefersDarkMode],

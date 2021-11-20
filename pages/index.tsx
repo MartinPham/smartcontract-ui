@@ -4,6 +4,7 @@ import { callWeb3Function } from 'utils/contracts'
 import { useRouter } from 'next/router'
 import { Function } from 'types/Function'
 import { Chain } from 'types/Chain'
+import { BigNumber } from '@ethersproject/bignumber'
 import { useWeb3React } from '@web3-react/core'
 import { NetworkConnector } from '@web3-react/network-connector'
 import { chains, network, injected, walletconnect } from 'config/connectors'
@@ -355,6 +356,7 @@ export default function Page() {
   const [selectedFunction, selectFunction] = useState<Function | null | undefined>(null)
   const [functionSearchText, searchFunction] = useState<string>('')
   const [functionArgs, setFunctionArguments] = useImmer<{ [name: string]: any }>({})
+  const [functionEth, setFunctionEth] = useState<string>('')
   const [abi, setAbi] = useState<any[]>([])
 
   useEffect(() => {
@@ -417,6 +419,21 @@ export default function Page() {
     router.query
   ])
 
+  useEffect(() => {
+    if (w3ReactInited) {
+      if (paramsAreLocked) {
+        if (router.query.eth) {
+          console.log('set eth from url')
+          setFunctionEth(router.query.eth as string)
+        }
+      }
+    }
+  }, [
+    w3ReactInited,
+    paramsAreLocked,
+    router.query.eth
+  ])
+
 
   // interactive with contract
   const [resultDialogIsOpen, toggleResultDialog] = useState(false)
@@ -433,6 +450,7 @@ export default function Page() {
       }
 
       if (w3React.chainId !== selectedChain?.chainId) {
+        console.log('switch chain', w3React.chainId, selectedChain?.chainId)
         await switchW3Chain(selectedChain as Chain)
 
         enqueueSnackbar(`Switched into ${(selectedChain as Chain).name}`, {
@@ -479,6 +497,7 @@ export default function Page() {
     w3React.library,
     w3React.chainId,
     selectedFunction,
+    selectedChain,
     functionArgs
   ])
 
@@ -519,6 +538,15 @@ export default function Page() {
         throw new Error(`Unexpected Error`)
       }
 
+      if (w3React.chainId !== selectedChain?.chainId) {
+        console.log('switch chain', w3React.chainId, selectedChain?.chainId)
+        await switchW3Chain(selectedChain as Chain)
+
+        enqueueSnackbar(`Switched into ${(selectedChain as Chain).name}`, {
+          variant: "warning",
+        })
+      }
+
       toggleWriting(true)
 
       const writeContract = new Contract(
@@ -541,7 +569,8 @@ export default function Page() {
         const writeResult = await callWeb3Function(
           writeContract as Contract,
           selectedFunction as Function,
-          functionArgs
+          functionArgs,
+          BigNumber.from(functionEth || 0)
         )
 
         writeResult.type = 'write'
@@ -579,10 +608,12 @@ export default function Page() {
     login,
     address,
     abi,
+    functionEth,
     w3React.library,
     w3React.connector,
     // writeContract,
     selectedFunction,
+    selectedChain,
     functionArgs
   ])
   return (
@@ -695,6 +726,9 @@ export default function Page() {
 
                   login={login}
                   isLoggingIn={isLoggingIn}
+
+                  eth={functionEth}
+                  setEth={setFunctionEth}
                 />
 
               </> : <>

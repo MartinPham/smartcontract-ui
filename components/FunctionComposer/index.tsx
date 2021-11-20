@@ -16,6 +16,8 @@ export const FunctionComposer = ({
   onTextChange,
   args,
   setArgs,
+  eth,
+  setEth,
   read,
   write,
   login,
@@ -31,6 +33,8 @@ export const FunctionComposer = ({
   onTextChange: (func: string) => void,
   args: { [name: string]: any },
   setArgs: (args: { [name: string]: any }) => void,
+  eth: string,
+  setEth: (eth: string) => void,
   read: () => void,
   write: () => void,
   login: () => void,
@@ -85,7 +89,12 @@ export const FunctionComposer = ({
           margin="normal"
           fullWidth
           label="ETH Amount"
+          value={eth}
+          onChange={(event) => {
+            setEth(event.target.value)
+          }}
         />
+        <br />
       </>}
 
       <br />
