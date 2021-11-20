@@ -57,7 +57,7 @@ export default function Page() {
   useEffect(() => {
     if (router.query) {
       console.log('url set args')
-      const args = []
+      // const args = []
       for (let key in router.query) {
         if (key.startsWith('args.')) {
           const argKey = key.substr(5)
