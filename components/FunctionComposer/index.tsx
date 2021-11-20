@@ -135,7 +135,7 @@ export const FunctionComposer = ({
             } else {
               output.push(
                 <LoadingButton
-                  loading={isLoggingIn}
+                  loading={isWriting}
                   key="login"
                   type="button"
                   variant="contained"

@@ -48,7 +48,7 @@ export const callWeb3Function = async (
   if (func && contract && funcArgs) {
     const args = calculateFunctionArguments(func.inputs, funcArgs);
 
-    console.log("Call ", func.name, args);
+    console.log("Call ", func.name, args, { contract });
     const result = await contract[func.name](...args);
 
     return result;

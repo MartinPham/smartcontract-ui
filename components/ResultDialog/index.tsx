@@ -48,6 +48,7 @@ export const ResultDialog = ({
     onCopy
   ])
 
+  // console.warn('result', result)
 
   return (
     <Dialog
@@ -98,7 +99,7 @@ export const ResultDialog = ({
                           <ListItemButton sx={{
                             overflow: 'auto'
                           }}  key={key} onClick={() => copyText(args[key])}>
-                            <ListItemText primary={args[key]} secondary={key} />
+                            <ListItemText primary={String(args[key])} secondary={key} />
                           </ListItemButton>
                         )
                       }
@@ -157,7 +158,7 @@ export const ResultDialog = ({
                                   <ListItemButton sx={{
                                     overflow: 'auto'
                                   }}  key={key} onClick={() => copyText(args[key])}>
-                                    <ListItemText primary={args[key]} secondary={key} />
+                                    <ListItemText primary={String(args[key])} secondary={key} />
                                   </ListItemButton>
                                 )
                               }
