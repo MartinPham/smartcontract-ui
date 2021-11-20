@@ -6,6 +6,7 @@ import { Function } from 'types/Function'
 import PageviewIcon from '@mui/icons-material/Pageview'
 import CreateIcon from '@mui/icons-material/Create'
 import LoadingButton from '@mui/lab/LoadingButton'
+import LockIcon from '@mui/icons-material/Lock'
 
 export const FunctionComposer = ({
   functions,
@@ -17,8 +18,11 @@ export const FunctionComposer = ({
   setArgs,
   read,
   write,
+  login,
   isReading,
-  isWriting
+  isWriting,
+  isLoggingIn,
+  canWrite
 }: {
   functions: Function[],
   func: Function | null | undefined,
@@ -29,8 +33,11 @@ export const FunctionComposer = ({
   setArgs: (args: { [name: string]: any }) => void,
   read: () => void,
   write: () => void,
+  login: () => void,
   isReading: boolean,
-  isWriting: boolean
+  isWriting: boolean,
+  isLoggingIn: boolean,
+  canWrite: boolean,
 }) => {
   return (<>
     <br />
@@ -110,19 +117,36 @@ export const FunctionComposer = ({
             if (output.length > 0) {
               output.push(<span key="space"> &nbsp; &nbsp; </span>)
             }
-            output.push(
-              <LoadingButton
-                loading={isWriting}
-                key="write"
-                type="button"
-                variant="contained"
-                startIcon={<CreateIcon />}
-                sx={{ flexGrow: 1 }}
-                onClick={write}
-              >
-                Write
-              </LoadingButton>
-            )
+
+            if(canWrite) {
+              output.push(
+                <LoadingButton
+                  loading={isWriting}
+                  key="write"
+                  type="button"
+                  variant="contained"
+                  startIcon={<CreateIcon />}
+                  sx={{ flexGrow: 1 }}
+                  onClick={write}
+                >
+                  Write
+                </LoadingButton>
+              )
+            } else {
+              output.push(
+                <LoadingButton
+                  loading={isLoggingIn}
+                  key="login"
+                  type="button"
+                  variant="contained"
+                  startIcon={<LockIcon />}
+                  sx={{ flexGrow: 1 }}
+                  onClick={login}
+                >
+                  Login
+                </LoadingButton>
+              )
+            }
           }
 
           return output

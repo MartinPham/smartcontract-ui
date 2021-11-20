@@ -1,7 +1,8 @@
 import { InjectedConnector } from '@web3-react/injected-connector'
-import { NetworkConnector } from '@web3-react/network-connector'
+// import { NetworkConnector } from '@web3-react/network-connector'
+import { NetworkConnector } from 'connectors/network'
 import { WalletConnectConnector } from '@web3-react/walletconnect-connector'
-import { WalletLinkConnector } from '@web3-react/walletlink-connector'
+// import { WalletLinkConnector } from '@web3-react/walletlink-connector'
 // import { LedgerConnector } from '@web3-react/ledger-connector'
 // import { LatticeConnector } from '@web3-react/lattice-connector'
 // import { FrameConnector } from '@web3-react/frame-connector'
@@ -38,11 +39,11 @@ export const walletconnect = new WalletConnectConnector({
   qrcode: true
 })
 
-export const walletlink = new WalletLinkConnector({
-  url: RPC_URLS[1],
-  appName: 'smartcontract-ui',
-  supportedChainIds: CHAIN_IDS
-})
+// export const walletlink = new WalletLinkConnector({
+//   url: RPC_URLS[1],
+//   appName: 'smartcontract-ui',
+//   supportedChainIds: CHAIN_IDS
+// })
 
 // export const ledger = new LedgerConnector({ 
 //   chainId: 1, 

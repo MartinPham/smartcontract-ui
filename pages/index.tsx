@@ -6,7 +6,7 @@ import { Function } from 'types/Function'
 import { Chain } from 'types/Chain'
 import { useWeb3React } from '@web3-react/core'
 import { NetworkConnector } from '@web3-react/network-connector'
-import { chains, network, injected } from 'config/connectors'
+import { chains, network, injected, walletconnect } from 'config/connectors'
 import { Contract } from '@ethersproject/contracts'
 import { Web3Provider } from '@ethersproject/providers'
 import { useEagerConnect } from 'hooks/useEagerConnect'
@@ -25,8 +25,7 @@ import { ContractSelector } from 'components/ContractSelector'
 import { FunctionComposer } from 'components/FunctionComposer'
 import { ResultDialog } from 'components/ResultDialog'
 import { ReadResult, WriteResult } from 'types/Result'
-
-
+import LinearProgress from '@mui/material/LinearProgress'
 
 export default function Page() {
   const router = useRouter()
@@ -51,7 +50,74 @@ export default function Page() {
   // snackbar
   const { enqueueSnackbar } = useSnackbar()
 
+  // handle w3
+  const w3React = useWeb3React<Web3Provider>()
+  // global.w3React = w3React
+  const [activatingConnector, setActivatingConnector] = useState(undefined)
+  useEffect(() => {
+    if (activatingConnector && activatingConnector === w3React.connector) {
+      setActivatingConnector(undefined)
+    }
+  }, [
+    activatingConnector,
+    w3React.connector
+  ])
 
+  const triedEager = useEagerConnect()
+  useInactiveListener(!triedEager || !!activatingConnector)
+
+  useEffect(() => {
+    if (w3React.active) {
+      console.warn('w3 ready')
+      const chain = chains.find(chain => chain.chainId == w3React.chainId)
+      if (chain) {
+        console.log('w3 select chain')
+        selectChain(chain)
+      }
+    }
+  }, [
+    w3React.active,
+    w3React.chainId
+  ])
+  const switchW3Chain = useCallback(async (chain: Chain) => {
+    console.log('switch w3 chain')
+    if (w3React.connector === network) {
+      (w3React.connector as NetworkConnector).changeChainId(Number(chain.chainId))
+    } else if (w3React.connector === injected) {
+      const ethereum = (global as { [key: string]: any })['ethereum']
+      const chainId = '0x' + Number(chain.chainId).toString(16)
+      try {
+        await ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{
+            chainId
+          }],
+        })
+      } catch (error: any) {
+        if (error['code'] === 4902) {
+          try {
+            if (chain.rpc && chain.rpc.length > 0) {
+              await ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId,
+                  chainName: chain.name,
+                  nativeCurrency: chain.nativeCurrency,
+                  rpcUrls: chain.rpc
+                }],
+              })
+            } else {
+              throw new Error(`Chain ${chain.name} is not supported for now...`)
+            }
+          } catch (error: any) {
+            showError(error)
+          }
+        }
+      }
+    }
+  }, [
+    w3React.connector
+  ])
 
 
   // handle JSON
@@ -99,7 +165,7 @@ export default function Page() {
   }, [])
 
   useEffect(() => {
-    if (json) {
+    if (json && w3React.active) {
       if (json['abi']) {
         // truffle
         const newFunctions = []
@@ -130,64 +196,41 @@ export default function Page() {
         // truffle
         for (let networkId in json['networks']) {
           if (json['networks'][networkId]['address']) {
-            if (selectedChain) {
-
-            } else {
-              const chain = chains.find(chain => String(chain.chainId) == networkId)
-              if (chain) {
-                selectChain(chain)
-              }
-
-              setAddress(json['networks'][networkId]['address'] as string)
+            const chain = chains.find(chain => String(chain.chainId) == networkId)
+            if (chain) {
+              console.log('json select chain')
+              // selectChain(chain)
+              switchW3Chain(chain)
             }
+
+            setAddress(json['networks'][networkId]['address'] as string)
+
+            break
           }
         }
       }
     }
   }, [
-    json
+    json,
+    w3React.active
   ])
 
-  // handle w3
-  const w3React = useWeb3React<Web3Provider>()
-
-  const [activatingConnector, setActivatingConnector] = useState(undefined)
-  useEffect(() => {
-    if (activatingConnector && activatingConnector === w3React.connector) {
-      setActivatingConnector(undefined)
-    }
-  }, [
-    activatingConnector,
-    w3React.connector
-  ])
-
-  const triedEager = useEagerConnect()
-  useInactiveListener(!triedEager || !!activatingConnector)
-
-  useEffect(() => {
-    if (w3React.active) {
-      const chain = chains.find(chain => chain.chainId == w3React.chainId)
-      if (chain) {
-        selectChain(chain)
-      }
-    }
-  }, [
-    w3React.active,
-    w3React.chainId
-  ])
 
 
   // handle chain, address, function, args
   const [selectedChain, selectChain] = useState<Chain | null | undefined>(null)
   const [chainSearchText, searchChain] = useState<string>('')
   const [address, setAddress] = useState('0x')
-  const [contract, setContract] = useState<Contract | null>(null)
+  const [readContract, setReadContract] = useState<Contract | null>(null)
+  const [writeContract, setWriteContract] = useState<Contract | null>(null)
   const [functions, setFunctions] = useState<Function[]>([])
   const [abi, setAbi] = useState<any[]>([])
   const [selectedFunction, selectFunction] = useState<Function | null | undefined>(null)
   const [functionSearchText, searchFunction] = useState<string>('')
   const [functionArgs, setFunctionArguments] = useImmer<{ [name: string]: any }>({})
   const contractIsReady = address && address.length === 42
+
+  // global.contract = contract
 
   useEffect(() => {
     if (selectedChain && json) {
@@ -202,13 +245,22 @@ export default function Page() {
 
   useEffect(() => {
     if (w3React && w3React.library && abi && contractIsReady) {
-      const newContract = new Contract(
+      const newReadContract = new Contract(
+        address,
+        abi,
+        w3React.library
+        // w3React.library.getSigner()
+      )
+
+      setReadContract(newReadContract)
+
+      const newWriteContract = new Contract(
         address,
         abi,
         w3React.library.getSigner()
       )
 
-      setContract(newContract)
+      setWriteContract(newWriteContract)
     }
   }, [
     w3React,
@@ -222,8 +274,10 @@ export default function Page() {
   const [result, setResult] = useState<{ type: string, data: ReadResult | WriteResult } | null>(null)
   const [isReading, toggleReading] = useState<boolean>(false)
   const [isWriting, toggleWriting] = useState<boolean>(false)
+  const [isLoggingIn, toggleLoggingIn] = useState<boolean>(false)
 
   const showError = useCallback((error) => {
+    console.error(error)
     let message = ''
     if (error['data'] && error['data']['message']) {
       message = error['data']['message']
@@ -242,7 +296,7 @@ export default function Page() {
     try {
       toggleReading(true)
       const readResult = await callWeb3Function(
-        contract as Contract,
+        readContract as Contract,
         selectedFunction as Function,
         functionArgs
       )
@@ -263,52 +317,93 @@ export default function Page() {
       showError(err)
     }
   }, [
-    contract,
+    readContract,
     selectedFunction,
     functionArgs
+  ])
+
+  // login
+  const login = useCallback(async () => {
+    toggleLoggingIn(true)
+    try {
+      if ((global as any).ethereum) {
+        await w3React.activate(injected, undefined, true)
+      } else {
+        await w3React.activate(walletconnect, undefined, true)
+        
+      }
+      
+
+
+      enqueueSnackbar('Logged in successfully', {
+        variant: "success",
+      })
+      toggleLoggingIn(false)
+
+    } catch (err) {
+      toggleLoggingIn(false)
+      showError(err)
+    }
+  }, [
+    w3React
   ])
 
   // write contract
   const write = useCallback(async () => {
     try {
       toggleWriting(true)
-      const writeResult = await callWeb3Function(
-        contract as Contract,
-        selectedFunction as Function,
-        functionArgs
-      )
 
-      writeResult.type = 'write'
+      if (w3React.connector === network) {
+        showError('Please login first')
+        try {
+          await login()
 
-      enqueueSnackbar(`Data sent successfully`, {
-        variant: "success",
-      })
+        } catch (err) {
+          toggleWriting(false)
+          showError(err)
+        }
+      } else {
+        const writeResult = await callWeb3Function(
+          writeContract as Contract,
+          selectedFunction as Function,
+          functionArgs
+        )
 
+        writeResult.type = 'write'
 
-      setResult({
-        type: 'write',
-        data: writeResult
-      })
-      toggleResultDialog(true)
-
-      writeResult.waitResult = await writeResult.wait()
-
-
-
-      setResult({
-        type: 'write',
-        data: writeResult
-      })
-      toggleResultDialog(true)
+        enqueueSnackbar(`Data sent successfully`, {
+          variant: "success",
+        })
 
 
-      toggleWriting(false)
+        setResult({
+          type: 'write',
+          data: writeResult
+        })
+        toggleResultDialog(true)
+
+        writeResult.waitResult = await writeResult.wait()
+
+
+
+        setResult({
+          type: 'write',
+          data: writeResult
+        })
+        toggleResultDialog(true)
+
+
+        toggleWriting(false)
+      }
+
     } catch (err: any) {
       toggleWriting(false)
       showError(err)
     }
   }, [
-    contract,
+    login,
+    w3React.connector,
+    writeContract,
     selectedFunction,
     functionArgs
   ])
@@ -373,44 +468,14 @@ export default function Page() {
 
               <br />
               <br />
+
+              {(w3React && w3React.active) ? <>
               <ContractSelector
                 chain={selectedChain}
                 onChainChange={async (chain) => {
                   selectChain(chain)
-                  if (w3React.connector === network) {
-                    (w3React.connector as NetworkConnector).changeChainId(Number(chain?.chainId))
-                  } else if (w3React.connector === injected) {
-                    const ethereum = (global as { [key: string]: any })['ethereum']
-                    const chainId = '0x' + Number(chain?.chainId).toString(16)
-                    try {
-                      await ethereum.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{
-                          chainId
-                        }],
-                      })
-                    } catch (error: any) {
-                      if (error['code'] === 4902) {
-                        try {
-                          if(chain?.rpc && chain?.rpc.length > 0) {
-                            await ethereum.request({
-                              method: 'wallet_addEthereumChain',
-                              params: [{
-                                chainId,
-                                chainName: chain?.name,
-                                nativeCurrency: chain?.nativeCurrency,
-                                rpcUrls: chain?.rpc
-                              }],
-                            })
-                          } else {
-                            throw new Error(`Chain ${chain?.name} is not supported for now...`)
-                          }
-                        } catch (error: any) {
-                          showError(error)
-                        }
-                      }
-                    }
-                  }
+
+                  switchW3Chain(chain as Chain)
                 }}
 
                 text={chainSearchText}
@@ -438,9 +503,15 @@ export default function Page() {
 
                   write={write}
                   isWriting={isWriting}
+                  canWrite={w3React && w3React.connector != network}
+
+                  login={login}
+                  isLoggingIn={isLoggingIn}
                 />
               )}
-
+              </> : <>
+                <LinearProgress />
+              </>}
 
 
               <Typography sx={{ mt: 5 }} variant="body2" color="text.secondary" align="center">

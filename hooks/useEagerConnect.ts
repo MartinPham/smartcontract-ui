@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { injected } from 'config/connectors'
+import { network, injected } from 'config/connectors'
 import { useWeb3React } from '@web3-react/core'
 
 export const useEagerConnect = () => {
@@ -15,7 +15,10 @@ export const useEagerConnect = () => {
           setTried(true)
         })
       } else {
-        setTried(true)
+        // setTried(true)
+        activate(network, undefined, true).catch(() => {
+          setTried(true)
+        })
       }
     })
   }, []) // intentionally only running on mount (make sure it's only mounted once :))
