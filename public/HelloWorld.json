@@ -1,0 +1,130 @@
+{
+  "contractName": "HelloWorld",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "name": "Greeted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        }
+      ],
+      "name": "GreetedWithHints",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        }
+      ],
+      "name": "greet",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "greetingMessage",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "greetedName",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        }
+      ],
+      "name": "setLastName",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getLastName",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "getLastGreeting",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "getLastGreetingWithHints",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "prefixMessage",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "lastGreetedName",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    }
+  ],
+  
+  
+  "networks": {
+    "322": {
+      "events": {},
+      "links": {},
+      "address": "0x1242677530a3CeBdF47746834b823a39e2493F28",
+      "transactionHash": "0x6f67373382cb395a974bb2ba385a77c52fa2361aa79665736113fb81d7478180"
+    }
+  }
+}
