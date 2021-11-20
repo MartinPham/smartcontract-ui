@@ -23,7 +23,7 @@ const SlideUpTransition = forwardRef(function Transition(
   },
   ref: Ref<unknown>
 ) {
-  return <Slide direction="up" ref={ref} {...props} />;
+  return <Slide direction='up' ref={ref} {...props} />;
 });
 
 
@@ -53,12 +53,12 @@ export const ResultDialog = ({
   return (
     <Dialog
       fullWidth={true}
-      maxWidth="md"
+      maxWidth='md'
       open={isOpen}
       TransitionComponent={SlideUpTransition}
       keepMounted
       onClose={onClose}
-      aria-describedby="config-dialog-description"
+      aria-describedby='config-dialog-description'
     >
       <DialogTitle>Result</DialogTitle>
       <DialogContent sx={{
@@ -74,9 +74,9 @@ export const ResultDialog = ({
               return (
                 <List
                   sx={{ width: '100%' }}
-                  component="nav"
+                  component='nav'
                   subheader={
-                    <ListSubheader component="div" sx={{
+                    <ListSubheader component='div' sx={{
                       backgroundColor: 'action.hover'
                     }}>
                       Returned values
@@ -116,7 +116,7 @@ export const ResultDialog = ({
                 {!result.data.waitResult && (<LinearProgress />)}
                 <List
                   sx={{ width: '100%' }}
-                  component="nav"
+                  component='nav'
                   subheader={<li />}
                 >
                   <li>
@@ -128,18 +128,18 @@ export const ResultDialog = ({
                         <ListItemButton sx={{
                           overflow: 'auto'
                         }} onClick={() => copyText(result.data.waitResult.blockNumber)}>
-                          <ListItemText primary={`${result.data.waitResult.blockNumber} (${result.data.waitResult.blockHash})`} secondary="Block" />
+                          <ListItemText primary={`${result.data.waitResult.blockNumber} (${result.data.waitResult.blockHash})`} secondary='Block' />
                         </ListItemButton>
                       )}
                       <ListItemButton sx={{
                         overflow: 'auto'
                       }} onClick={() => copyText(result.data.hash)}>
-                        <ListItemText primary={result.data.hash} secondary="TX Hash" />
+                        <ListItemText primary={result.data.hash} secondary='TX Hash' />
                       </ListItemButton>
                       <ListItemButton sx={{
                         overflow: 'auto'
                       }} onClick={() => copyText(result.data.value.toString())}>
-                        <ListItemText primary={result.data.value.toString()} secondary="ETH" />
+                        <ListItemText primary={result.data.value.toString()} secondary='ETH' />
                       </ListItemButton>
                     </ul>
                   </li>

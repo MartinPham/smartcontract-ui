@@ -1,29 +1,51 @@
-import { BigNumber } from "@ethersproject/bignumber"
-import { Function, FunctionInput } from "types/Function"
-import { Contract } from "@ethersproject/contracts"
+import { BigNumber } from '@ethersproject/bignumber'
+import { Function, FunctionInput } from 'types/Function'
+import { Contract } from '@ethersproject/contracts'
+
+export const multiplyDecimals = (number: string | number | undefined | null, decimals: string | number | undefined | null) => {
+	let numbersString = String(number || '0')
+	const decimalsNumber = BigNumber.from(decimals || '0')
+
+	let borrowed = 0
+	if(numbersString.indexOf('.') > -1) {
+		const components = numbersString.split('.')
+		borrowed = components[1].length
+		numbersString = numbersString.replace('.', '')
+	}
+
+	let finalNumber = BigNumber.from(numbersString)
+	finalNumber = finalNumber.mul(BigNumber.from(10).pow(decimalsNumber))
+	finalNumber = finalNumber.div(BigNumber.from(10).pow(borrowed))
+
+	return finalNumber
+}
 
 export const normalizedArgValue: any = (type: string, value: any) => {
-  if (type.endsWith("[]")) {
+  if (type.endsWith('[]')) {
     const arrayItemType = type.substr(0, -2)
     const argArray = (value as string)
-      .split(",")
-      .map((val) => normalizedArgValue(arrayItemType, val))
+      .split(/,|\n/g)
+			.filter(val => val.trim().length > 0)
+      .map((val) => normalizedArgValue(arrayItemType, val.trim()))
 
     return argArray
   } else if (
-    type.startsWith("int") ||
-    type.startsWith("uint") ||
-    type.startsWith("fixed") ||
-    type.startsWith("unfixed")
+    type.startsWith('int') ||
+    type.startsWith('uint') ||
+    type.startsWith('fixed') ||
+    type.startsWith('unfixed')
   ) {
     // number
-    return BigNumber.from(value)
-  } else if (type === "bool") {
+		const valueString = (value || '0')
+		const valueComponents = valueString.split('e')
+
+    return multiplyDecimals(valueComponents[0], valueComponents[1] || '0')
+  } else if (type === 'bool') {
     return value ? true : false
   }
 
   // else
-  return value || ""
+  return value || ''
 }
 
 export const calculateFunctionArguments = (
@@ -50,14 +72,14 @@ export const callWeb3Function = async (
     const args = calculateFunctionArguments(func.inputs, funcArgs)
 
     const overrides: { [key: string]: any } = {}
-    if(func.stateMutability === "payable") {
+    if(func.stateMutability === 'payable') {
 
       if (eth !== null && eth.gt(0)) {
         overrides.value = eth.toString()
       }
     }
 
-    console.log("Call ", func.name, args, overrides, { contract })
+    console.log('Call ', func.name, args, overrides, { contract })
     const result = await contract[func.name](...args, overrides)
 
     return result
@@ -67,5 +89,5 @@ export const callWeb3Function = async (
     func, contract, funcArgs
   })
 
-  throw new Error("Unexpected error")
+  throw new Error('Unexpected error')
 }

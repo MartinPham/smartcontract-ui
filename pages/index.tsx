@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useImmer } from 'use-immer'
-import { callWeb3Function } from 'utils/contracts'
+import { callWeb3Function, normalizedArgValue } from 'utils/contracts'
 import { useRouter } from 'next/router'
 import { Function } from 'types/Function'
 import { Chain } from 'types/Chain'
-import { BigNumber } from '@ethersproject/bignumber'
 import { useWeb3React } from '@web3-react/core'
 import { NetworkConnector } from '@web3-react/network-connector'
 import { chains, network, injected, walletconnect } from 'config/connectors'
@@ -45,7 +44,7 @@ export default function Page() {
       message = error as string
     }
     enqueueSnackbar(message, {
-      variant: "error",
+      variant: 'error',
     })
   }, [])
 
@@ -185,7 +184,7 @@ export default function Page() {
       console.log('file -> set source')
       setSource(file.name)
       const reader = new FileReader()
-      reader.readAsText(file, "UTF-8")
+      reader.readAsText(file, 'UTF-8')
       reader.onload = (evt) => {
         if (evt.target) {
           try {
@@ -359,6 +358,9 @@ export default function Page() {
   const [functionEth, setFunctionEth] = useState<string>('')
   const [abi, setAbi] = useState<any[]>([])
 
+	global.functionArgs = functionArgs
+	global.functionEth = functionEth
+
   useEffect(() => {
     if (w3ReactInited) {
       if (paramsAreLocked) {
@@ -454,7 +456,7 @@ export default function Page() {
         await switchW3Chain(selectedChain as Chain)
 
         enqueueSnackbar(`Switched into ${(selectedChain as Chain).name}`, {
-          variant: "warning",
+          variant: 'warning',
         })
       }
 
@@ -483,7 +485,7 @@ export default function Page() {
       toggleResultDialog(true)
 
       enqueueSnackbar('Data queried successfully', {
-        variant: "success",
+        variant: 'success',
       })
       toggleReading(false)
     } catch (err: any) {
@@ -515,7 +517,7 @@ export default function Page() {
 
 
       enqueueSnackbar('Logged in successfully', {
-        variant: "success",
+        variant: 'success',
       })
       toggleLoggingIn(false)
 
@@ -543,7 +545,7 @@ export default function Page() {
         await switchW3Chain(selectedChain as Chain)
 
         enqueueSnackbar(`Switched into ${(selectedChain as Chain).name}`, {
-          variant: "warning",
+          variant: 'warning',
         })
       }
 
@@ -570,13 +572,13 @@ export default function Page() {
           writeContract as Contract,
           selectedFunction as Function,
           functionArgs,
-          BigNumber.from(functionEth || 0)
+					normalizedArgValue('uint256', functionEth)
         )
 
         writeResult.type = 'write'
 
         enqueueSnackbar(`Data sent successfully`, {
-          variant: "success",
+          variant: 'success',
         })
 
 
@@ -616,9 +618,13 @@ export default function Page() {
     selectedChain,
     functionArgs
   ])
+
+	// global.BigNumber = BigNumber
+	// global.multiplyDecimals = multiplyDecimals
+
   return (
     <>
-      <Grid container component="main" sx={{ height: '100vh' }}>
+      <Grid container component='main' sx={{ height: '100vh' }}>
         <CssBaseline />
         <Grid
           item
@@ -653,10 +659,10 @@ export default function Page() {
             <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
               <AccountTreeIcon />
             </Avatar>
-            <Typography component="h1" variant="h5">
+            <Typography component='h1' variant='h5'>
               Smart Contract UI
             </Typography>
-            <Box component="div" sx={{
+            <Box component='div' sx={{
               mt: 1,
               width: '100%'
             }}>
@@ -706,6 +712,7 @@ export default function Page() {
 
 
                 <FunctionComposer
+									selectedChain={selectedChain as Chain}
                   functions={functions}
 
                   func={selectedFunction}
@@ -736,9 +743,9 @@ export default function Page() {
               </>}
 
 
-              <Typography sx={{ mt: 5 }} variant="body2" color="text.secondary" align="center">
+              <Typography sx={{ mt: 5 }} variant='body2' color='text.secondary' align='center'>
                 © Martin Pham - {' '}
-                <Link color="inherit" href="https://mph.am/">
+                <Link color='inherit' href='https://mph.am/'>
                   mph.am
                 </Link>
               </Typography>

@@ -6,20 +6,20 @@ import createEmotionCache from 'utils/createEmotionCache'
 export default class MyDocument extends Document {
   render() {
     return (
-      <Html lang="en">
+      <Html lang='en'>
         <Head>
           <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+            rel='stylesheet'
+            href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap'
           />
-          <link rel="icon" href="/icons/fav.png" type="image/png" />
-          <link rel="manifest" href="/manifest.json"/>
-          <script type="application/ld+json" dangerouslySetInnerHTML={{
+          <link rel='icon' href='/icons/fav.png' type='image/png' />
+          <link rel='manifest' href='/manifest.json'/>
+          <script type='application/ld+json' dangerouslySetInnerHTML={{
               __html: `
               {
-                "@context": "https://schema.org",
-                "@type": "WebSite",
-                "url": "https://contract.mph.am/"
+                '@context': 'https://schema.org',
+                '@type': 'WebSite',
+                'url': 'https://contract.mph.am/'
               }`,
             }}>
           
@@ -31,7 +31,7 @@ export default class MyDocument extends Document {
 
           <script
             dangerouslySetInnerHTML={{
-              __html: `if ("serviceWorker" in navigator) { navigator.serviceWorker.register("/sw.js") }`,
+              __html: `if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js') }`,
             }}
           ></script>
         </body>

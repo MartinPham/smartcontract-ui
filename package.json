@@ -22,10 +22,12 @@
     "clsx": "latest",
     "copy-to-clipboard": "^3.3.1",
     "immer": "^9.0.6",
+    "loglevel": "^1.8.0",
     "next": "latest",
     "notistack": "^2.0.3",
     "react": "latest",
     "react-dom": "latest",
+    "react-number-format": "^4.8.0",
     "react-syntax-highlighter": "^15.4.5",
     "use-immer": "^0.6.0"
   },

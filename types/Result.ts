@@ -1,4 +1,4 @@
-import { BigNumber } from "@ethersproject/bignumber"
+import { BigNumber } from '@ethersproject/bignumber'
 
 export type ReadResult = {
   [key: string]: any

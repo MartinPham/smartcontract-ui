@@ -30,9 +30,7 @@ export default function App(props: MyAppProps) {
     () =>
       createTheme({
         palette: {
-          // mode: prefersDarkMode ? 'dark' : 'light',
-          // mode: 'light',
-          mode: 'dark',
+          mode: prefersDarkMode ? 'dark' : 'light',
         },
       }),
     [prefersDarkMode],
@@ -42,7 +40,7 @@ export default function App(props: MyAppProps) {
     <CacheProvider value={emotionCache}>
       <Head>
         <title>Smart Contract UI</title>
-        <meta name="viewport" content="initial-scale=1, width=device-width" />
+        <meta name='viewport' content='minimal-ui=yes, width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no' />
       </Head>
       <ThemeProvider theme={theme}>
         <CssBaseline />
