@@ -64,7 +64,7 @@ export const SourceBrowser = ({
       name='file'
       autoComplete='off'
 			helperText={<>
-				Try some examples <Link href='/?json=/HelloWorld.json'>here</Link> or <Link href='/?json=/Swap.json&address=0xc0fFee0000C824D24E0F280f1e4D21152625742b&func=getAmountsOut&args.amountIn=0.1e18&args.path=0x0039f574ee5cc39bdd162e9a88e3eb1f111baf48, 0xc0ffeE0000921eB8DD7d506d4dE8D5B79b856157'>here</Link>
+				Try some examples <Link href='/?json=/HelloWorld.json'>here</Link> or <Link href='/?json=/Swap.json&address=0xc0fFee0000C824D24E0F280f1e4D21152625742b&func=getAmountsOut&args.amountIn=0.1e18&args.path=0x0039f574ee5cc39bdd162e9a88e3eb1f111baf48, 0xc0ffeE0000921eB8DD7d506d4dE8D5B79b856157&network=321'>here</Link>
 			</>}
     />
   )
