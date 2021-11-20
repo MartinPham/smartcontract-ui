@@ -48,7 +48,6 @@ export const ResultDialog = ({
     onCopy
   ])
 
-  // console.warn('result', result)
 
   return (
     <Dialog

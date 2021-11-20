@@ -14,6 +14,8 @@ import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Link from '@mui/material/Link'
 import { HistoryEntry } from 'types/History'
+import Button from '@mui/material/Button'
+import BlockIcon from '@mui/icons-material/Block';
 
 interface NumberFormatComponentProps {
 	onChange: (event: { target: { name: string; value: string } }) => void;
@@ -129,13 +131,15 @@ export const FunctionComposer = ({
 	eth,
 	setEth,
 	read,
+	toggleReading,
 	write,
+	toggleWriting,
 	login,
 	isReading,
 	isWriting,
 	isLoggingIn,
 	canWrite,
-	history, 
+	history,
 	openHistoryEntry
 }: {
 	selectedChain: Chain,
@@ -149,7 +153,9 @@ export const FunctionComposer = ({
 	eth: string,
 	setEth: (eth: string) => void,
 	read: () => void,
+	toggleReading: (flag: boolean) => void,
 	write: () => void,
+	toggleWriting: (flag: boolean) => void,
 	login: () => void,
 	isReading: boolean,
 	isWriting: boolean,
@@ -371,7 +377,43 @@ export const FunctionComposer = ({
 
 					return output
 				})()}
+
+
 			</Box>
+
+			{isReading && <>
+				<Box sx={{
+					marginTop: '15px',
+					width: '100%',
+					textAlign: 'center'
+				}}>
+					<Button
+						color='error'
+						variant='outlined'
+						fullWidth
+						startIcon={<BlockIcon />}
+						onClick={() => {
+							toggleReading(false)
+						}}>Stop</Button>
+				</Box>
+			</>}
+
+			{isWriting && <>
+				<Box sx={{
+					marginTop: '15px',
+					width: '100%',
+					textAlign: 'center'
+				}}>
+					<Button
+						color='error'
+						variant='outlined'
+						fullWidth
+						startIcon={<BlockIcon />}
+						onClick={() => {
+							toggleWriting(false)
+						}}>Stop</Button>
+				</Box>
+			</>}
 		</>}
 	</>)
 }

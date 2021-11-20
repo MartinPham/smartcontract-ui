@@ -15,6 +15,7 @@ import { useInactiveListener } from 'hooks/useInactiveListener'
 import Avatar from '@mui/material/Avatar'
 import CssBaseline from '@mui/material/CssBaseline'
 import Link from '@mui/material/Link'
+import Button from '@mui/material/Button'
 import Paper from '@mui/material/Paper'
 import Box from '@mui/material/Box'
 import Grid from '@mui/material/Grid'
@@ -29,8 +30,8 @@ import { ReadResult, WriteResult } from 'types/Result'
 import LinearProgress from '@mui/material/LinearProgress'
 import { useHistory } from 'hooks/useHistory'
 import { HistoryEntry } from 'types/History'
-
-let w3Timeout = null
+import { log, warn, fatal } from 'utils/logger'
+import ReplayIcon from '@mui/icons-material/Replay'
 
 export default function Page() {
 	// snackbar
@@ -38,7 +39,7 @@ export default function Page() {
 
 	// Error feedback
 	const showError = useCallback((error) => {
-		console.error(error)
+		fatal(error)
 		let message = ''
 		if (error['data'] && error['data']['message']) {
 			message = error['data']['message']
@@ -59,7 +60,7 @@ export default function Page() {
 
 		setSource(JSON.stringify(entry.abi))
 
-		console.log('history -> abi', entry.abi)
+		log('history -> abi', entry.abi)
 		setAbi(entry.abi)
 
 		const newFunctions = []
@@ -69,32 +70,32 @@ export default function Page() {
 				newFunctions.push(func)
 			}
 		}
-		console.log('history -> functions', newFunctions)
+		log('history -> functions', newFunctions)
 		setFunctions(newFunctions)
 
 		const chain = chains.find(chain => chain.chainId == entry.network)
 		if (chain) {
-			console.log('history -> set chain')
+			log('history -> set chain')
 			selectChain(chain)
 		}
 
-		console.log('history -> address')
+		log('history -> address')
 		setAddress(entry.address)
 
 		const func = newFunctions.find(f => f.name === entry.function)
 		if (func) {
-			console.log('history -> function')
+			log('history -> function')
 			selectFunction(func)
 		}
 
-		console.log('history -> args')
+		log('history -> args')
 		for (let key in entry.args) {
 			setFunctionArguments((draft: any) => {
 				draft[key] = entry.args[key]
 			})
 		}
 
-		console.log('history -> eth')
+		log('history -> eth')
 		setFunctionEth(entry.eth)
 
 
@@ -104,18 +105,7 @@ export default function Page() {
 	const w3React = useWeb3React<Web3Provider>()
 	const [w3ReactInited, initW3React] = useState(false)
 	// global.w3 = w3React
-	useEffect(() => {
-		if(!w3ReactInited) {
-			w3Timeout = setTimeout(() => {
-				if(!w3ReactInited) {
-					console.warn('w3 timeout')
-					location.reload()
-				}
-			}, 5000)
-		}
-	}, [
-		w3ReactInited
-	])
+
 
 	const [activatingConnector, setActivatingConnector] = useState(undefined)
 	useEffect(() => {
@@ -133,14 +123,14 @@ export default function Page() {
 
 	const switchW3Chain = useCallback(async (chain: Chain) => {
 		if (!chain) return
-		console.log('switch w3 chain', chain)
+		log('switch w3 chain', chain)
 
 		if (w3React.connector === network) {
-			console.log('switch w3 chain on network');
+			log('switch w3 chain on network');
 
 			(w3React.connector as NetworkConnector).changeChainId(Number(chain.chainId))
 		} else if (w3React.connector === injected) {
-			console.log('switch w3 chain on injected')
+			log('switch w3 chain on injected')
 			const ethereum = (global as { [key: string]: any })['ethereum']
 
 			if (ethereum) {
@@ -186,14 +176,14 @@ export default function Page() {
 	useEffect(() => {
 		if (w3React.active && w3React.chainId) {
 			if (!w3ReactInited) {
-				console.warn('w3 ready', w3React.chainId, w3React.connector)
+				warn('w3 ready', w3React.chainId, w3React.connector)
 				initW3React(true)
 			}
 
-			console.warn('w3 update state', w3React.chainId, w3React.connector)
+			warn('w3 update state', w3React.chainId, w3React.connector)
 			const chain = chains.find(chain => chain.chainId == w3React.chainId)
 			if (chain) {
-				console.log('w3.chainId -> set chain dropdown to', w3React.chainId)
+				log('w3.chainId -> set chain dropdown to', w3React.chainId)
 
 				selectChain(chain)
 			}
@@ -212,7 +202,7 @@ export default function Page() {
 		if (router.query.json) {
 
 			if (w3ReactInited) {
-				console.log('set urljson from url')
+				log('set urljson from url')
 				setUrl(router.query.json as string)
 			}
 		}
@@ -228,10 +218,10 @@ export default function Page() {
 				try {
 					const jsonContent = await (await fetch(url)).json()
 
-					console.log('url -> set source')
+					log('url -> set source')
 					setSource(url)
 
-					console.log('url -> set json')
+					log('url -> set json')
 					setJson(jsonContent)
 				} catch (err) {
 					showError(err)
@@ -245,7 +235,7 @@ export default function Page() {
 	const readBrowsedFile = useCallback((event) => {
 		const file = event.target.files?.item(0)
 		if (file) {
-			console.log('file -> set source')
+			log('file -> set source')
 			setSource(file.name)
 			const reader = new FileReader()
 			reader.readAsText(file, 'UTF-8')
@@ -254,7 +244,7 @@ export default function Page() {
 					try {
 						const jsonContent = JSON.parse(String(evt.target.result))
 
-						console.log('file -> set json')
+						log('file -> set json')
 						setJson(jsonContent)
 						toggleParamsLock(false)
 					} catch (err) {
@@ -271,7 +261,7 @@ export default function Page() {
 	const [json, setJson] = useState<any>(null)
 	useEffect(() => {
 		if (json) {
-			console.log('json provided')
+			log('json provided')
 			if (json['abi']) {
 				// truffle
 				const newFunctions = []
@@ -282,10 +272,10 @@ export default function Page() {
 					}
 				}
 
-				console.log('json (truffle) -> set function list')
+				log('json (truffle) -> set function list')
 				setFunctions(newFunctions)
 
-				console.log('json (truffle) -> set abi')
+				log('json (truffle) -> set abi')
 				setAbi(json['abi'])
 			} else if (typeof json === 'object' && json.length > 0 && json[0]['type']) {
 				// array of functions
@@ -298,16 +288,16 @@ export default function Page() {
 				}
 
 
-				console.log('json (abi) -> set function list')
+				log('json (abi) -> set function list')
 				setFunctions(newFunctions)
 
-				console.log('json (abi) -> set abi')
+				log('json (abi) -> set abi')
 				setAbi(json)
 			} else {
-				console.log('json (invalid) -> empty function list')
+				log('json (invalid) -> empty function list')
 				setFunctions([])
 
-				console.log('json (invalid) -> empty abi')
+				log('json (invalid) -> empty abi')
 				setAbi([])
 			}
 
@@ -343,7 +333,7 @@ export default function Page() {
 		}
 
 		if (shoudlLockParams) {
-			console.log('lock params')
+			log('lock params')
 			toggleParamsLock(true)
 		}
 	}, [
@@ -355,7 +345,7 @@ export default function Page() {
 			if (paramsAreLocked) {
 				const chain = chains.find(chain => String(chain.chainId) == router.query.network)
 				if (chain) {
-					console.log('set network from url')
+					log('set network from url')
 
 					switchW3Chain(chain)
 						.catch(showError)
@@ -377,7 +367,7 @@ export default function Page() {
 						if (json['networks'][networkId]['address']) {
 							const chain = chains.find(chain => String(chain.chainId) == networkId)
 							if (chain) {
-								console.log('json (truffle) -> set network')
+								log('json (truffle) -> set network')
 
 								switchW3Chain(chain)
 									.catch(showError)
@@ -401,7 +391,7 @@ export default function Page() {
 		if (!paramsAreLocked || !router.query.address) {
 			if (selectedChain && json) {
 				if (json['networks'] && json['networks'][String(selectedChain.chainId)]) {
-					console.log('set address from selectedChain')
+					log('set address from selectedChain')
 					setAddress(json['networks'][String(selectedChain.chainId)]['address'] as string)
 				}
 			}
@@ -434,7 +424,7 @@ export default function Page() {
 						const func = functions.find(f => f.name === router.query.func)
 
 						if (func) {
-							console.log('set function from url')
+							log('set function from url')
 							selectFunction(func)
 						}
 					}
@@ -452,7 +442,7 @@ export default function Page() {
 		if (w3ReactInited) {
 			if (paramsAreLocked) {
 				if (router.query.address) {
-					console.log('set address from url')
+					log('set address from url')
 					setAddress(router.query.address as string)
 				}
 			}
@@ -466,7 +456,7 @@ export default function Page() {
 	useEffect(() => {
 		if (router.query) {
 			if (paramsAreLocked) {
-				console.log('set args from url')
+				log('set args from url')
 				for (let key in router.query) {
 					if (key.startsWith('args.')) {
 						const argKey = key.substr(5)
@@ -489,7 +479,7 @@ export default function Page() {
 		if (w3ReactInited) {
 			if (paramsAreLocked) {
 				if (router.query.eth) {
-					console.log('set eth from url')
+					log('set eth from url')
 					setFunctionEth(router.query.eth as string)
 				}
 			}
@@ -516,7 +506,7 @@ export default function Page() {
 			}
 
 			if (w3React.chainId !== selectedChain?.chainId) {
-				console.log('switch chain', w3React.chainId, selectedChain?.chainId)
+				log('switch chain', w3React.chainId, selectedChain?.chainId)
 				await switchW3Chain(selectedChain as Chain)
 
 				enqueueSnackbar(`Switched into ${(selectedChain as Chain).name}`, {
@@ -608,12 +598,12 @@ export default function Page() {
 				throw new Error(`Invalid address ${address}`)
 			}
 			if (!w3React.library) {
-				console.error('UNEXPECTED_ERROR', w3React.library)
+				fatal('UNEXPECTED_ERROR', w3React.library)
 				throw new Error(`Unexpected Error`)
 			}
 
 			if (w3React.chainId !== selectedChain?.chainId) {
-				console.log('switch chain', w3React.chainId, selectedChain?.chainId)
+				log('switch chain', w3React.chainId, selectedChain?.chainId)
 				await switchW3Chain(selectedChain as Chain)
 
 				enqueueSnackbar(`Switched into ${(selectedChain as Chain).name}`, {
@@ -809,9 +799,11 @@ export default function Page() {
 
 									read={read}
 									isReading={isReading}
+									toggleReading={toggleReading}
 
 									write={write}
 									isWriting={isWriting}
+									toggleWriting={toggleWriting}
 									canWrite={w3React && w3React.connector != network}
 
 									login={login}
@@ -825,7 +817,17 @@ export default function Page() {
 								/>
 
 							</> : <>
+								<br />
 								<LinearProgress />
+								<br/>
+								<Box sx={{
+									width: '100%',
+									textAlign: 'center'
+								}}>
+									<Button startIcon={<ReplayIcon />} onClick={() => {
+										window.location.reload()
+									}}>Reload</Button>
+								</Box>
 							</>}
 
 
