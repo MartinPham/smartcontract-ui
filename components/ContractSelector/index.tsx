@@ -1,23 +1,25 @@
+import { useState } from 'react'
 import Autocomplete from '@mui/material/Autocomplete'
 import TextField from '@mui/material/TextField'
 import { Chain } from 'types/Chain'
-import { chains } from 'config/connectors'
+import { chains } from 'config/chains'
 
 export const ContractSelector = ({
 	chain,
 	onChainChange,
-	text,
-	onTextChange,
 	address,
 	onAddressChange
 }: {
 	chain: Chain | null | undefined,
 	onChainChange: (chain: Chain | null | undefined) => void,
-	text: string,
-	onTextChange: (text: string) => void,
+
 	address: string,
 	onAddressChange: (address: string) => void
 }) => {
+
+
+	const [chainSearchText, searchChain] = useState<string>('')
+
 	return (<>
 		<Autocomplete
 			disablePortal
@@ -30,9 +32,9 @@ export const ContractSelector = ({
 			onChange={(_, newValue: Chain | null) => {
 				onChainChange(newValue)
 			}}
-			inputValue={text}
+			inputValue={chainSearchText}
 			onInputChange={(_, newInputValue) => {
-				onTextChange(newInputValue)
+				searchChain(newInputValue)
 			}}
 		/>
 		<TextField

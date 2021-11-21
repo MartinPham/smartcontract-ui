@@ -74,6 +74,8 @@ const NumberTextField = ({
 		setDecimal(valueComponents[1] || '0')
 	}, [value])
 
+	
+
 	return (
 		<TextField
 			// type='number'
@@ -124,8 +126,7 @@ export const FunctionComposer = ({
 	functions,
 	func,
 	onFuncChange,
-	text,
-	onTextChange,
+
 	args,
 	setArgs,
 	eth,
@@ -146,8 +147,7 @@ export const FunctionComposer = ({
 	functions: Function[],
 	func: Function | null | undefined,
 	onFuncChange: (func: Function | null | undefined) => void,
-	text: string,
-	onTextChange: (func: string) => void,
+
 	args: { [name: string]: any },
 	setArgs: (args: { [name: string]: any }) => void,
 	eth: string,
@@ -171,7 +171,9 @@ export const FunctionComposer = ({
 	};
 	const handleClose = () => {
 		setHistoryAnchorEl(null)
-	};
+	}
+
+	const [functionSearchText, searchFunction] = useState<string>('')
 
 	return (<>
 		<Menu
@@ -237,9 +239,9 @@ export const FunctionComposer = ({
 			onChange={(_, newValue: Function | null) => {
 				onFuncChange(newValue)
 			}}
-			inputValue={text}
+			inputValue={functionSearchText}
 			onInputChange={(_, newInputValue) => {
-				onTextChange(newInputValue)
+				searchFunction(newInputValue)
 			}}
 
 		/>

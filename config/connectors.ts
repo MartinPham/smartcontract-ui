@@ -8,46 +8,34 @@ import { WalletConnectConnector } from '@web3-react/walletconnect-connector'
 // import { FrameConnector } from '@web3-react/frame-connector'
 // import { AuthereumConnector } from '@web3-react/authereum-connector'
 // import { TorusConnector } from '@web3-react/torus-connector'
-import { Chain, RpcUrlMap } from 'types/Chain'
+// import { RpcUrlMap } from 'types/Chain'
 
-export const chains: Chain[] = require('config/chains.json')
-
-const INFURA_API_KEY = '84842078b09946638c03157f83405213'
-
-const RPC_URLS: RpcUrlMap = {}
-const CHAIN_IDS: number[] = []
-
-if(CHAIN_IDS.length === 0) {
-  for(let chain of chains) {
-    if (chain.rpc[0]) {
-      RPC_URLS[chain.chainId] = chain.rpc[0].replace('${INFURA_API_KEY}', INFURA_API_KEY)
-      CHAIN_IDS.push(chain.chainId)
-    }
-  }
-}
+import { chainIds, rpcs } from 'config/chains'
 
 
-export const injected = new InjectedConnector({ supportedChainIds: CHAIN_IDS })
+
+
+export const injected = new InjectedConnector({ supportedChainIds: chainIds })
 
 export const network = new NetworkConnector({
-  urls: RPC_URLS,
+  urls: rpcs,
   defaultChainId: 1
 })
 
 export const walletconnect = new WalletConnectConnector({
-  rpc: RPC_URLS,
+  rpc: rpcs,
   qrcode: true
 })
 
 // export const walletlink = new WalletLinkConnector({
-//   url: RPC_URLS[1],
+//   url: rpcs[1],
 //   appName: 'smartcontract-ui',
-//   supportedChainIds: CHAIN_IDS
+//   supportedChainIds: chainIds
 // })
 
 // export const ledger = new LedgerConnector({ 
 //   chainId: 1, 
-//   url: RPC_URLS[1], 
+//   url: rpcs[1], 
 //   pollingInterval: POLLING_INTERVAL 
 // })
 
@@ -55,10 +43,10 @@ export const walletconnect = new WalletConnectConnector({
 // export const lattice = new LatticeConnector({
 //   chainId: 4,
 //   appName: 'web3-react',
-//   url: RPC_URLS[4]
+//   url: rpcs[4]
 // })
 
-// export const frame = new FrameConnector({ supportedChainIds: CHAIN_IDS })
+// export const frame = new FrameConnector({ supportedChainIds: chainIds })
 
 // export const authereum = new AuthereumConnector({ chainId: 42 })
 

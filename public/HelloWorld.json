@@ -1,7 +1,7 @@
 
 {
   "contractName": "HelloWorld",
-  "abi": [
+	"abi": [
     {
       "anonymous": false,
       "inputs": [
@@ -177,6 +177,34 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "sender",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "senderAddress",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "origin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "originAddress",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
     }
   ],
   

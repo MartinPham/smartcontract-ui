@@ -6,7 +6,8 @@ import { Function } from 'types/Function'
 import { Chain } from 'types/Chain'
 import { useWeb3React } from '@web3-react/core'
 import { NetworkConnector } from '@web3-react/network-connector'
-import { chains, network, injected, walletconnect } from 'config/connectors'
+import { chains } from 'config/chains'
+import { network, injected, walletconnect } from 'config/connectors'
 import { Contract } from '@ethersproject/contracts'
 import { Web3Provider } from '@ethersproject/providers'
 import { isAddress } from '@ethersproject/address'
@@ -53,25 +54,32 @@ export default function Page() {
 		})
 	}, [])
 
-	// history
-	const [history, recordEntry] = useHistory()
-	const openHistoryEntry = useCallback((entry: HistoryEntry) => {
+	// import 
+	const importAbi = useCallback((abi) => {
 		toggleParamsLock(false)
 
-		setSource(JSON.stringify(entry.abi))
+		setSource(JSON.stringify(abi))
 
-		log('history -> abi', entry.abi)
-		setAbi(entry.abi)
+		setAbi(abi)
 
 		const newFunctions = []
-		for (let item of entry.abi) {
+		for (let item of abi) {
 			if (item['type'] === 'function') {
 				const func = item as Function
 				newFunctions.push(func)
 			}
 		}
-		log('history -> functions', newFunctions)
 		setFunctions(newFunctions)
+
+		return newFunctions
+	}, [])
+
+	// history
+	const [history, recordEntry] = useHistory()
+	const openHistoryEntry = useCallback((entry: HistoryEntry) => {
+		
+
+		const newFunctions = importAbi(entry.abi)
 
 		const chain = chains.find(chain => chain.chainId == entry.network)
 		if (chain) {
@@ -309,7 +317,7 @@ export default function Page() {
 
 	// chain
 	const [selectedChain, selectChain] = useState<Chain | null | undefined>(null)
-	const [chainSearchText, searchChain] = useState<string>('')
+
 	const [address, setAddress] = useState('')
 	const [paramsAreLocked, toggleParamsLock] = useState<boolean>(false)
 	useEffect(() => {
@@ -407,7 +415,7 @@ export default function Page() {
 
 	const [functions, setFunctions] = useState<Function[]>([])
 	const [selectedFunction, selectFunction] = useState<Function | null | undefined>(null)
-	const [functionSearchText, searchFunction] = useState<string>('')
+
 	const [functionArgs, setFunctionArguments] = useImmer<{ [name: string]: any }>({})
 	const [functionEth, setFunctionEth] = useState<string>('')
 	const [abi, setAbi] = useState<any[]>([])
@@ -517,11 +525,13 @@ export default function Page() {
 
 			toggleReading(true)
 
+
+
 			const readContract = new Contract(
 				address,
 				abi,
-				w3React.library
-				// w3React.library.getSigner()
+				// w3React.library
+				(w3React?.connector === network) ? w3React.library : w3React?.library?.getSigner()
 			)
 
 			recordEntry({
@@ -761,6 +771,23 @@ export default function Page() {
 									}}
 
 									onError={showError}
+
+
+									chain={selectedChain}
+									onChainChange={async (chain) => {
+										// selectChain(chain)
+
+										switchW3Chain(chain as Chain)
+
+										toggleParamsLock(false)
+									}}
+
+
+
+									address={address}
+									onAddressChange={setAddress}
+
+									onAbiImport={importAbi}
 								/>
 
 								<br />
@@ -776,9 +803,6 @@ export default function Page() {
 										toggleParamsLock(false)
 									}}
 
-									text={chainSearchText}
-									onTextChange={searchChain}
-
 									address={address}
 									onAddressChange={setAddress}
 								/>
@@ -791,8 +815,6 @@ export default function Page() {
 									func={selectedFunction}
 									onFuncChange={selectFunction}
 
-									text={functionSearchText}
-									onTextChange={searchFunction}
 
 									args={functionArgs}
 									setArgs={setFunctionArguments}
@@ -819,7 +841,7 @@ export default function Page() {
 							</> : <>
 								<br />
 								<LinearProgress />
-								<br/>
+								<br />
 								<Box sx={{
 									width: '100%',
 									textAlign: 'center'

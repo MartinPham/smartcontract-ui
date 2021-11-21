@@ -5,6 +5,7 @@ export type Chain = {
   nativeCurrency: ChainCurrency
   chainId: number
   explorers: ChainExplorer[]
+	abi?: string
 };
 
 export type ChainCurrency = {

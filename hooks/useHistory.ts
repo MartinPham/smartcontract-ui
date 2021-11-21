@@ -4,7 +4,7 @@ import localForage from 'localforage'
 import { HistoryEntry } from 'types/History'
 import md5 from 'md5'
 
-export const useHistory = (key: string = 'history', maxEntries: number = 10) => {
+export const useHistory = (key: string = 'history', maxEntries: number = 5) => {
 	const [history, setHistory] = useImmer<HistoryEntry[]>([])
 
 	useEffect(() => {
