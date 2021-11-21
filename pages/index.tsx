@@ -5,7 +5,6 @@ import { useRouter } from 'next/router'
 import { Function } from 'types/Function'
 import { Chain } from 'types/Chain'
 import { useWeb3React } from '@web3-react/core'
-import { NetworkConnector } from '@web3-react/network-connector'
 import { chains } from 'config/chains'
 import { network, injected, walletconnect } from 'config/connectors'
 import { Contract } from '@ethersproject/contracts'
@@ -131,15 +130,21 @@ export default function Page() {
 	useInactiveListener(!triedEager || !!activatingConnector)
 
 
-	const switchW3Chain = useCallback(async (chain: Chain) => {
+	const switchW3Chain = useCallback(async (chain: Chain, onConnector: any = null) => {
 		if (!chain) return
 		log('switch w3 chain', chain)
 
-		if (w3React.connector === network) {
+		const connector = onConnector || w3React.connector
+
+		if (connector === network) {
 			log('switch w3 chain on network');
 
-			(w3React.connector as NetworkConnector).changeChainId(Number(chain.chainId))
-		} else if (w3React.connector === injected) {
+			network.changeChainId(Number(chain.chainId))
+		} else if (connector === injected) {
+
+			// log('switch w3 chain also on network');
+			// network.changeChainId(Number(chain.chainId))
+
 			log('switch w3 chain on injected')
 			const ethereum = (global as { [key: string]: any })['ethereum']
 
@@ -178,6 +183,8 @@ export default function Page() {
 			} else {
 				throw new Error(`Unable to switch into ${chain.name}`)
 			}
+		} else {
+			throw new Error(`Unable to switch into ${chain.name}`)
 		}
 	}, [
 		w3React.connector
@@ -347,10 +354,23 @@ export default function Page() {
 
 	const selectSigner = useCallback(async (signer: Signer) => {
 		try {
-			warn('select signer', signer)
+			warn('select signer', signer.id, selectedChain)
 			if (signer.id === 'anonymous') {
+				if (await network.getChainId() !== selectedChain?.chainId) {
+					log('signer change, diff chain -> switch')
+					await switchW3Chain(selectedChain as Chain, network)
+				}
+				log('switched -> activate network')
 				await w3React.activate(network, undefined, true)
 			} else if (signer.id === 'browser') {
+				if (await injected.getChainId() !== selectedChain?.chainId) {
+					try {
+						log('signer change, diff chain -> switch')
+						await switchW3Chain(selectedChain as Chain, injected)
+					} catch (err) {
+						showError(err)
+					}
+				}
 				await w3React.activate(injected, undefined, true)
 			} else if (signer.id === 'walletconnect') {
 				await w3React.activate(walletconnect, undefined, true)
@@ -362,7 +382,10 @@ export default function Page() {
 		}
 
 		// setSigner(signer)
-	}, [])
+	}, [
+		selectedChain,
+		w3React.chainId
+	])
 
 	useEffect(() => {
 		let shoudlLockParams = false
