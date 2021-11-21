@@ -83,25 +83,36 @@ export const SourceBrowser = ({
 		if (chain) {
 			const abiUrl = chain.abi?.replace('${ADDRESS}', address)
 
-			const [jsonPath, url] = abiUrl?.split(' ') as string[]
+			if(abiUrl) {
 
-			if (jsonPath && url) {
-				try {
-					const data = await (await fetch(url, {
 
-					})).json()
+				const [jsonPath, url] = abiUrl?.split(' ') as string[]
 
-					const abiJson = query(data, jsonPath)
+				if (jsonPath && url) {
+					let data = ''
+					try {
+						data = await (await fetch(url, {
+	
+						})).json()
+	
+						const abiJson = query(data, jsonPath)
 
-					const abi = JSON.parse(abiJson)
+						data = abiJson
 
-					log('abi', abi)
-					onAbiImport(abi)
-
-					toggleImportDialog(false)
-				} catch (error) {
-					onError(error)
+						log(data)
+	
+						const abi = JSON.parse(abiJson)
+	
+						log('abi', abi)
+						onAbiImport(abi)
+	
+						toggleImportDialog(false)
+					} catch (error) {
+						onError('Invalid ABI received: ' + data)
+					}
 				}
+			} else {
+				onError(`Unfortunately, importing SmartContract from ${chain.name} is not supported for now`)
 			}
 		}
 	}, [
