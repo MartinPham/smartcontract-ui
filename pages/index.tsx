@@ -184,7 +184,14 @@ export default function Page() {
 				throw new Error(`Unable to switch into ${chain.name}`)
 			}
 		} else {
-			throw new Error(`Unable to switch into ${chain.name}`)
+			// throw new Error(`Unable to switch into ${chain.name}`)
+			log('connector not support switching chain -> fallback to anonymous')
+			network.changeChainId(Number(chain.chainId))
+			await w3React.activate(network, undefined, true)
+
+			enqueueSnackbar('Fallback to anonymous signer', {
+				variant: 'warning',
+			})
 		}
 	}, [
 		w3React.connector
@@ -811,6 +818,7 @@ export default function Page() {
 										// selectChain(chain)
 
 										switchW3Chain(chain as Chain)
+											.catch(showError)
 
 										toggleParamsLock(false)
 									}}
@@ -832,6 +840,7 @@ export default function Page() {
 										// selectChain(chain)
 
 										switchW3Chain(chain as Chain)
+										.catch(showError)
 
 										toggleParamsLock(false)
 									}}
