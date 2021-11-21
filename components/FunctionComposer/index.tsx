@@ -15,7 +15,18 @@ import MenuItem from '@mui/material/MenuItem'
 import Link from '@mui/material/Link'
 import { HistoryEntry } from 'types/History'
 import Button from '@mui/material/Button'
-import BlockIcon from '@mui/icons-material/Block';
+import BlockIcon from '@mui/icons-material/Block'
+import Avatar from '@mui/material/Avatar'
+import List from '@mui/material/List'
+import ListItem from '@mui/material/ListItem'
+import DialogActions from '@mui/material/DialogActions'
+import ListItemAvatar from '@mui/material/ListItemAvatar'
+import ListItemText from '@mui/material/ListItemText'
+import DialogTitle from '@mui/material/DialogTitle'
+import Dialog from '@mui/material/Dialog'
+import { signers } from 'config/signers'
+import { Signer } from 'types/Signer'
+
 
 interface NumberFormatComponentProps {
 	onChange: (event: { target: { name: string; value: string } }) => void;
@@ -74,7 +85,7 @@ const NumberTextField = ({
 		setDecimal(valueComponents[1] || '0')
 	}, [value])
 
-	
+
 
 	return (
 		<TextField
@@ -135,13 +146,15 @@ export const FunctionComposer = ({
 	toggleReading,
 	write,
 	toggleWriting,
-	login,
 	isReading,
 	isWriting,
-	isLoggingIn,
 	canWrite,
 	history,
-	openHistoryEntry
+	openHistoryEntry,
+
+
+	signer,
+	onSignerChange
 }: {
 	selectedChain: Chain,
 	functions: Function[],
@@ -156,13 +169,15 @@ export const FunctionComposer = ({
 	toggleReading: (flag: boolean) => void,
 	write: () => void,
 	toggleWriting: (flag: boolean) => void,
-	login: () => void,
 	isReading: boolean,
 	isWriting: boolean,
-	isLoggingIn: boolean,
 	canWrite: boolean,
 	history: HistoryEntry[],
-	openHistoryEntry: (entry: HistoryEntry) => void
+	openHistoryEntry: (entry: HistoryEntry) => void,
+
+
+	signer: Signer,
+	onSignerChange: (signer: Signer) => void
 }) => {
 	const [historyAnchorEl, setHistoryAnchorEl] = useState<null | HTMLElement>(null)
 	const open = Boolean(historyAnchorEl)
@@ -174,6 +189,11 @@ export const FunctionComposer = ({
 	}
 
 	const [functionSearchText, searchFunction] = useState<string>('')
+
+	const [connectDialogIsOpen, toggleConnectDialog] = useState<boolean>(false)
+	const closeConnectDialog = () => {
+		toggleConnectDialog(false)
+	}
 
 	return (<>
 		<Menu
@@ -329,6 +349,7 @@ export const FunctionComposer = ({
 								loading={isReading}
 								key='read'
 								type='button'
+								color='success'
 								variant='contained'
 								startIcon={<PageviewIcon />}
 								sx={{ flexGrow: 1 }}
@@ -352,6 +373,7 @@ export const FunctionComposer = ({
 									loading={isWriting}
 									key='write'
 									type='button'
+									color='success'
 									variant='contained'
 									startIcon={<CreateIcon />}
 									sx={{ flexGrow: 1 }}
@@ -362,17 +384,48 @@ export const FunctionComposer = ({
 							)
 						} else {
 							output.push(
-								<LoadingButton
-									loading={isLoggingIn}
-									key='login'
-									type='button'
-									variant='contained'
-									startIcon={<LockIcon />}
-									sx={{ flexGrow: 1 }}
-									onClick={login}
-								>
-									Login
-								</LoadingButton>
+								<Fragment key='login'>
+									<LoadingButton
+										loading={false}
+										type='button'
+										variant='contained'
+										color='warning'
+										startIcon={<LockIcon />}
+										sx={{ flexGrow: 1 }}
+										onClick={() => {
+											toggleConnectDialog(true)
+										}}
+									>
+										Connect to Wallet
+									</LoadingButton>
+
+									<Dialog onClose={closeConnectDialog} open={connectDialogIsOpen}>
+										<DialogTitle>Connect to your wallet</DialogTitle>
+										<List sx={{ pt: 0 }}>
+											{signers.map((s) => {
+												if (s.id === 'anonymous') return null
+
+												const Icon = s.icon
+												return (
+													<ListItem key={s.id} selected={signer.id === s.id} button onClick={() => {
+														onSignerChange(s)
+														closeConnectDialog()
+													}}>
+														<ListItemAvatar>
+															<Avatar>
+																<Icon />
+															</Avatar>
+														</ListItemAvatar>
+														<ListItemText primary={s.name} secondary={s.description}/>
+													</ListItem>
+												)
+											})}
+										</List>
+										<DialogActions>
+											<Button onClick={closeConnectDialog}>Cancel</Button>
+										</DialogActions>
+									</Dialog>
+								</Fragment>
 							)
 						}
 					}

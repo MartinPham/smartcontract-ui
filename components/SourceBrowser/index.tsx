@@ -120,7 +120,7 @@ export const SourceBrowser = ({
 						getBoundingClientRect: () => {
 							return new DOMRect(
 								positionRef.current.x,
-								areaRef.current!.getBoundingClientRect().y + 70,
+								areaRef.current!.getBoundingClientRect().y + 75,
 								0,
 								0,
 							)

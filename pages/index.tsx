@@ -33,6 +33,8 @@ import { useHistory } from 'hooks/useHistory'
 import { HistoryEntry } from 'types/History'
 import { log, warn, fatal } from 'utils/logger'
 import ReplayIcon from '@mui/icons-material/Replay'
+import { signers } from 'config/signers'
+import { Signer } from 'types/Signer'
 
 export default function Page() {
 	// snackbar
@@ -77,7 +79,7 @@ export default function Page() {
 	// history
 	const [history, recordEntry] = useHistory()
 	const openHistoryEntry = useCallback((entry: HistoryEntry) => {
-		
+
 
 		const newFunctions = importAbi(entry.abi)
 
@@ -194,11 +196,32 @@ export default function Page() {
 				log('w3.chainId -> set chain dropdown to', w3React.chainId)
 
 				selectChain(chain)
+
+				if (w3React.connector === network) {
+					setSigner(signers[0])
+				} else if (w3React.connector === injected) {
+					setSigner(signers[1])
+				} else if (w3React.connector === walletconnect) {
+					setSigner(signers[2])
+				}
 			}
 		}
 	}, [
 		w3React.active,
 		w3React.chainId
+	])
+
+	useEffect(() => {
+		warn('w3 connector change', w3React.connector)
+		if (w3React.connector === network) {
+			setSigner(signers[0])
+		} else if (w3React.connector === injected) {
+			setSigner(signers[1])
+		} else if (w3React.connector === walletconnect) {
+			setSigner(signers[2])
+		}
+	}, [
+		w3React.connector
 	])
 
 
@@ -317,9 +340,30 @@ export default function Page() {
 
 	// chain
 	const [selectedChain, selectChain] = useState<Chain | null | undefined>(null)
+	const [signer, setSigner] = useState<Signer>(signers[0])
 
 	const [address, setAddress] = useState('')
 	const [paramsAreLocked, toggleParamsLock] = useState<boolean>(false)
+
+	const selectSigner = useCallback(async (signer: Signer) => {
+		try {
+			warn('select signer', signer)
+			if (signer.id === 'anonymous') {
+				await w3React.activate(network, undefined, true)
+			} else if (signer.id === 'browser') {
+				await w3React.activate(injected, undefined, true)
+			} else if (signer.id === 'walletconnect') {
+				await w3React.activate(walletconnect, undefined, true)
+			} else {
+				throw new Error('Importing Private Key / Mnemonic is disabled for now')
+			}
+		} catch (err) {
+			showError(err)
+		}
+
+		// setSigner(signer)
+	}, [])
+
 	useEffect(() => {
 		let shoudlLockParams = false
 
@@ -504,7 +548,6 @@ export default function Page() {
 	const [result, setResult] = useState<{ type: string, data: ReadResult | WriteResult } | null>(null)
 	const [isReading, toggleReading] = useState<boolean>(false)
 	const [isWriting, toggleWriting] = useState<boolean>(false)
-	const [isLoggingIn, toggleLoggingIn] = useState<boolean>(false)
 
 	// read contract
 	const read = useCallback(async () => {
@@ -575,31 +618,6 @@ export default function Page() {
 		functionArgs
 	])
 
-	// login
-	const login = useCallback(async () => {
-		toggleLoggingIn(true)
-		try {
-			if ((global as any).ethereum) {
-				await w3React.activate(injected, undefined, true)
-			} else {
-				await w3React.activate(walletconnect, undefined, true)
-
-			}
-
-
-
-			enqueueSnackbar('Logged in successfully', {
-				variant: 'success',
-			})
-			toggleLoggingIn(false)
-
-		} catch (err) {
-			toggleLoggingIn(false)
-			showError(err)
-		}
-	}, [
-		w3React
-	])
 
 	// write contract
 	const write = useCallback(async () => {
@@ -631,14 +649,7 @@ export default function Page() {
 			)
 
 			if (w3React.connector === network) {
-				showError('Please login first')
-				try {
-					await login()
-
-				} catch (err) {
-					toggleWriting(false)
-					showError(err)
-				}
+				showError('Please connect to your wallet')
 			} else {
 
 				recordEntry({
@@ -690,7 +701,6 @@ export default function Page() {
 			showError(err)
 		}
 	}, [
-		login,
 		address,
 		abi,
 		functionEth,
@@ -805,6 +815,9 @@ export default function Page() {
 
 									address={address}
 									onAddressChange={setAddress}
+
+									signer={signer}
+									onSignerChange={selectSigner}
 								/>
 
 
@@ -828,14 +841,17 @@ export default function Page() {
 									toggleWriting={toggleWriting}
 									canWrite={w3React && w3React.connector != network}
 
-									login={login}
-									isLoggingIn={isLoggingIn}
+
+									signer={signer}
+									onSignerChange={selectSigner}
 
 									eth={functionEth}
 									setEth={setFunctionEth}
 
 									history={history}
 									openHistoryEntry={openHistoryEntry}
+
+
 								/>
 
 							</> : <>

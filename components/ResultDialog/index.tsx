@@ -19,12 +19,12 @@ import copy from 'copy-to-clipboard'
 
 const SlideUpTransition = forwardRef(function Transition(
   props: TransitionProps & {
-    children: ReactElement<any, any>;
+    children: ReactElement<any, any>
   },
   ref: Ref<unknown>
 ) {
-  return <Slide direction='up' ref={ref} {...props} />;
-});
+  return <Slide direction='up' ref={ref} {...props} />
+})
 
 
 export const ResultDialog = ({
