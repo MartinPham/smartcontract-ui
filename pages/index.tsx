@@ -660,7 +660,7 @@ export default function Page() {
 				const wallet = key.getWallet()
 				let walletWithProvider = wallet?.connect(w3React?.library as Web3Provider)
 				providerOrSigner = walletWithProvider
-			} else {
+			} else if (w3React?.connector !== anonymous) {
 				providerOrSigner = w3React?.library?.getSigner()
 			}
 
