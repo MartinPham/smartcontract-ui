@@ -327,7 +327,7 @@ export const FunctionComposer = ({
 							label="Private key / Mnemonic words"
 							fullWidth
 							value={walletKey}
-							onChange={event => setWalletKey(event.target.value)}
+							onChange={(event: any) => setWalletKey(event.target.value)}
 						/>
 					</DialogContent>
 					<DialogActions sx={{

@@ -40,7 +40,8 @@
     "dev": "(local-ssl-proxy --source 3443 --target 3000) & next",
     "prebuild": "node scripts/buildChainList",
     "build": "next build && next export",
-    "prod": "next start"
+    "prod": "next start",
+    "push": "yarn build && (git add -A ; git commit -m \"ok\" ; git push -f origin main)"
   },
   "devDependencies": {
     "@types/md5": "^2.3.1",
