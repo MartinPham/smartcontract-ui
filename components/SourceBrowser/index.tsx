@@ -210,7 +210,7 @@ export const SourceBrowser = ({
 				<DialogTitle>Import SmartContract ABI</DialogTitle>
 				<DialogContent>
 					<DialogContentText>
-						You could import the SmartContract's ABI code by specifying its deployed network and address.
+						You can import the SmartContract's ABI code by specifying its deployed network and address.
 						<br />
 						<br />
 					</DialogContentText>

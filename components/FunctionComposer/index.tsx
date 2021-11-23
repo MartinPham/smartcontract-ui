@@ -314,7 +314,7 @@ export const FunctionComposer = ({
 					<DialogTitle>Import Wallet</DialogTitle>
 					<DialogContent>
 						<DialogContentText>
-							You could import wallet from a private key, or from mnemonic words.
+							You can import the wallet from a private key, or from mnemonic words.
 
 							<br />
 							<br />
