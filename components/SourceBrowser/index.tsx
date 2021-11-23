@@ -185,7 +185,7 @@ export const SourceBrowser = ({
 					name='file'
 					autoComplete='off'
 					helperText={<>
-						Try an example <Link href='/?json=/HelloWorld.json'>here</Link>, <Link href='/?json=/Swap.json&address=0xc0fFee0000C824D24E0F280f1e4D21152625742b&func=getAmountsOut&args.amountIn=0.1e18&args.path=0x0039f574ee5cc39bdd162e9a88e3eb1f111baf48, 0xc0ffeE0000921eB8DD7d506d4dE8D5B79b856157&network=321'>here</Link> or <Link sx={{ cursor: 'pointer' }} onClick={() => {
+						Try an example <Link href='/?json=/Swap.json&address=0x7a250d5630b4cf539739df2c5dacb4c659f2488d&func=getAmountsOut&args.amountIn=0.1e18&args.path=0x1f9840a85d5af5bf1d1762f925bdaddc4201f984, 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&network=1'>here</Link>, <Link href='/?json=/HelloWorld.json'>here</Link> or <Link sx={{ cursor: 'pointer' }} onClick={() => {
 							toggleImportDialog(true)
 						}}>import it here</Link>
 					</>}

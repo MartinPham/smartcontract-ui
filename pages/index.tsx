@@ -6,7 +6,7 @@ import { Function } from 'types/Function'
 import { Chain } from 'types/Chain'
 import { useWeb3React } from '@web3-react/core'
 import { chains } from 'config/chains'
-import { network, injected, walletconnect } from 'config/connectors'
+import { network, injected, walletconnect, walletlink, binance } from 'config/connectors'
 import { Contract } from '@ethersproject/contracts'
 import { Web3Provider } from '@ethersproject/providers'
 import { isAddress } from '@ethersproject/address'
@@ -130,7 +130,7 @@ export default function Page() {
 	useInactiveListener(!triedEager || !!activatingConnector)
 
 
-	const switchW3Chain = useCallback(async (chain: Chain, onConnector: any = null) => {
+	const switchW3Chain = useCallback(async (chain: Chain, onConnector: any = null, willFallback: boolean = true) => {
 		if (!chain) return
 		log('switch w3 chain', chain)
 
@@ -140,13 +140,19 @@ export default function Page() {
 			log('switch w3 chain on network');
 
 			network.changeChainId(Number(chain.chainId))
-		} else if (connector === injected) {
+		} else if (
+			connector === injected
+			// || connector === binance
+		) {
 
 			// log('switch w3 chain also on network');
 			// network.changeChainId(Number(chain.chainId))
 
 			log('switch w3 chain on injected')
 			const ethereum = (global as { [key: string]: any })['ethereum']
+			// if (connector === binance) {
+			// 	ethereum = (global as { [key: string]: any })['BinanceChain']
+			// }
 
 			if (ethereum) {
 				const chainId = '0x' + Number(chain.chainId).toString(16)
@@ -184,14 +190,20 @@ export default function Page() {
 				throw new Error(`Unable to switch into ${chain.name}`)
 			}
 		} else {
-			// throw new Error(`Unable to switch into ${chain.name}`)
-			log('connector not support switching chain -> fallback to anonymous')
-			network.changeChainId(Number(chain.chainId))
-			await w3React.activate(network, undefined, true)
+			if (willFallback) {
+				// throw new Error(`Unable to switch into ${chain.name}`)
+				log('connector not support switching chain -> fallback to anonymous')
+				network.changeChainId(Number(chain.chainId))
+				await w3React.activate(network, undefined, true)
 
-			enqueueSnackbar('Fallback to anonymous signer', {
-				variant: 'warning',
-			})
+				enqueueSnackbar('Fallback to anonymous signer', {
+					variant: 'warning',
+				})
+			} else {
+				enqueueSnackbar(`Cannot switch into ${chain.name}`, {
+					variant: 'warning',
+				})
+			}
 		}
 	}, [
 		w3React.connector
@@ -217,6 +229,10 @@ export default function Page() {
 					setSigner(signers[1])
 				} else if (w3React.connector === walletconnect) {
 					setSigner(signers[2])
+				} else if (w3React.connector === walletlink) {
+					setSigner(signers[3])
+				} else if (w3React.connector === binance) {
+					setSigner(signers[4])
 				}
 			}
 		}
@@ -233,6 +249,10 @@ export default function Page() {
 			setSigner(signers[1])
 		} else if (w3React.connector === walletconnect) {
 			setSigner(signers[2])
+		} else if (w3React.connector === walletlink) {
+			setSigner(signers[3])
+		} else if (w3React.connector === binance) {
+			setSigner(signers[4])
 		}
 	}, [
 		w3React.connector
@@ -381,6 +401,10 @@ export default function Page() {
 				await w3React.activate(injected, undefined, true)
 			} else if (signer.id === 'walletconnect') {
 				await w3React.activate(walletconnect, undefined, true)
+			} else if (signer.id === 'walletlink') {
+				await w3React.activate(walletlink, undefined, true)
+			} else if (signer.id === 'binance') {
+				await w3React.activate(binance, undefined, true)
 			} else {
 				throw new Error('Importing Private Key / Mnemonic is disabled for now')
 			}
@@ -429,7 +453,7 @@ export default function Page() {
 				if (chain) {
 					log('set network from url')
 
-					switchW3Chain(chain)
+					switchW3Chain(chain, null, false)
 						.catch(showError)
 
 				}
@@ -451,7 +475,7 @@ export default function Page() {
 							if (chain) {
 								log('json (truffle) -> set network')
 
-								switchW3Chain(chain)
+								switchW3Chain(chain, null, false)
 									.catch(showError)
 
 								return
@@ -779,9 +803,11 @@ export default function Page() {
 							alignItems: 'center',
 						}}
 					>
-						<Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-							<AccountTreeIcon />
-						</Avatar>
+						<Link href='/'>
+							<Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+								<AccountTreeIcon />
+							</Avatar>
+						</Link>
 						<Typography component='h1' variant='h5'>
 							Smart Contract UI
 						</Typography>
@@ -840,7 +866,7 @@ export default function Page() {
 										// selectChain(chain)
 
 										switchW3Chain(chain as Chain)
-										.catch(showError)
+											.catch(showError)
 
 										toggleParamsLock(false)
 									}}

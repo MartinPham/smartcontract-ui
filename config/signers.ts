@@ -1,7 +1,9 @@
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import VpnKeyIcon from '@mui/icons-material/VpnKey';
-import QrCode2Icon from '@mui/icons-material/QrCode2';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline'
+import VpnKeyIcon from '@mui/icons-material/VpnKey'
+import QrCode2Icon from '@mui/icons-material/QrCode2'
+import CropFreeIcon from '@mui/icons-material/CropFree'
+import ExtensionIcon from '@mui/icons-material/Extension'
 import { Signer } from 'types/Signer';
 
 export const signers: Signer[] = [
@@ -20,8 +22,20 @@ export const signers: Signer[] = [
 	{
 		id: 'walletconnect',
 		icon: QrCode2Icon,
-		name: 'Wallet Connect',
+		name: 'WalletConnect',
 		description: 'Connect to wallet using WalletConnect protocol',
+	},
+	{
+		id: 'walletlink',
+		icon: CropFreeIcon,
+		name: 'WalletLink',
+		description: 'Connect to wallet using Coinbase\'s WalletLink protocol',
+	},
+	{
+		id: 'binance',
+		icon: ExtensionIcon,
+		name: 'Binance Wallet',
+		description: 'Connect to Binance Wallet',
 	},
 	{
 		id: 'key',
