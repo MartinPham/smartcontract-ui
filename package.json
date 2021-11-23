@@ -41,7 +41,7 @@
     "prebuild": "node scripts/buildChainList",
     "build": "next build && next export",
     "prod": "next start",
-    "push": "yarn build && (git add -A ; git commit -m \"ok\" ; git push -f origin main)"
+    "push": "yarn build && (git add -A ; git commit -m $MSG ; git push -f origin main)"
   },
   "devDependencies": {
     "@types/md5": "^2.3.1",
