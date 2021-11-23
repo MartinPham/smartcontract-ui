@@ -324,7 +324,7 @@ export const FunctionComposer = ({
 						<TextField
 							autoFocus
 							type='password'
-							label="Private key / Nnemonic words"
+							label="Private key / Mnemonic words"
 							fullWidth
 							value={walletKey}
 							onChange={event => setWalletKey(event.target.value)}
