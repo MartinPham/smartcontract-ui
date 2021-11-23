@@ -321,7 +321,7 @@ export const FunctionComposer = ({
 							<Alert severity="info">Your data <b>WILL NOT BE</b> saved anywhere</Alert>
 							<br />
 						</DialogContentText>
-						<TextField
+						<QrTextField
 							autoFocus
 							type='password'
 							label="Private key / Mnemonic words"
