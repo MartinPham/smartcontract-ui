@@ -219,14 +219,11 @@ export default function Page() {
 	useEffect(() => {
 		if (w3React.active && w3React.chainId) {
 			if (!w3ReactInited) {
-				warn('w3 ready', w3React.chainId, w3React.connector)
 				initW3React(true)
 			}
 
-			warn('w3 update state', w3React.chainId, w3React.connector)
 			const chain = chains.find(chain => chain.chainId == w3React.chainId)
 			if (chain) {
-				log('w3.chainId -> set chain dropdown to', w3React.chainId)
 
 				selectChain(chain)
 
@@ -251,7 +248,6 @@ export default function Page() {
 	])
 
 	useEffect(() => {
-		warn('w3 connector change', w3React.connector)
 		if (w3React.connector === anonymous) {
 			setSigner(signers[0])
 		} else if (w3React.connector === injected) {

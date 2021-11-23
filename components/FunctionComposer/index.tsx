@@ -365,7 +365,7 @@ export const FunctionComposer = ({
 					}
 					if (input.type.endsWith('[]')) {
 						return (
-							<Tooltip arrow title='Multiple value, you can separate each value by new line'>
+							<Tooltip arrow title='Multiple values, you can separate each value by new line'>
 							<TextField
 								multiline
 								margin='normal'
@@ -383,7 +383,7 @@ export const FunctionComposer = ({
 
 						return (
 							<Tooltip arrow title={<>
-								Numberic value<br />You can use exp. box, example: 5 x 10^3 = 5000
+								Numeric value<br />You can use the exponential box, example: 5 x 10^3 = 5000
 							</>}>
 								<span style={{
 									float: 'left',
