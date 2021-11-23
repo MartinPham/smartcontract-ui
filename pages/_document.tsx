@@ -14,6 +14,15 @@ export default class MyDocument extends Document {
           />
           <link rel='icon' href='/icons/fav.png' type='image/png' />
           <link rel='manifest' href='/manifest.json'/>
+          <script dangerouslySetInnerHTML={{
+              __html: `
+							if (location.port !== '3000' && location.protocol !== 'https:') {
+								location.replace('https:' + location.href.substring(location.protocol.length));
+							}
+							`,
+            }}>
+          
+          </script>
           <script type='application/ld+json' dangerouslySetInnerHTML={{
               __html: `
               {
