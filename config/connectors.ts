@@ -18,8 +18,15 @@ import { chainIds, rpcs } from 'config/chains'
 
 export const injected = new InjectedConnector({ supportedChainIds: chainIds })
 
-export const network = new NetworkConnector({
+export const anonymous = new NetworkConnector({
   urls: rpcs,
+	supportedChainIds: chainIds,
+  defaultChainId: 1
+})
+
+export const key = new NetworkConnector({
+  urls: rpcs,
+	supportedChainIds: chainIds,
   defaultChainId: 1
 })
 

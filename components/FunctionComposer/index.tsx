@@ -20,13 +20,19 @@ import Avatar from '@mui/material/Avatar'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
 import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogContentText from '@mui/material/DialogContentText'
 import ListItemAvatar from '@mui/material/ListItemAvatar'
 import ListItemText from '@mui/material/ListItemText'
 import DialogTitle from '@mui/material/DialogTitle'
 import Dialog from '@mui/material/Dialog'
 import { signers } from 'config/signers'
 import { Signer } from 'types/Signer'
-
+import Tooltip from '@mui/material/Tooltip'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import Grid from '@mui/material/Grid'
+import { Wallet } from '@ethersproject/wallet'
+import Alert from '@mui/material/Alert'
 
 interface NumberFormatComponentProps {
 	onChange: (event: { target: { name: string; value: string } }) => void;
@@ -154,7 +160,9 @@ export const FunctionComposer = ({
 
 
 	signer,
-	onSignerChange
+	onSignerChange,
+
+	onError
 }: {
 	selectedChain: Chain,
 	functions: Function[],
@@ -174,17 +182,17 @@ export const FunctionComposer = ({
 	canWrite: boolean,
 	history: HistoryEntry[],
 	openHistoryEntry: (entry: HistoryEntry) => void,
-
+	onError: (err: any) => void,
 
 	signer: Signer,
-	onSignerChange: (signer: Signer) => void
+	onSignerChange: (signer: Signer, data?: any) => void
 }) => {
 	const [historyAnchorEl, setHistoryAnchorEl] = useState<null | HTMLElement>(null)
-	const open = Boolean(historyAnchorEl)
-	const handleClick = (event: MouseEvent<HTMLElement>) => {
+	const historyIsOpen = Boolean(historyAnchorEl)
+	const openHistory = (event: MouseEvent<HTMLElement>) => {
 		setHistoryAnchorEl(event.currentTarget)
 	};
-	const handleClose = () => {
+	const closeHistory = () => {
 		setHistoryAnchorEl(null)
 	}
 
@@ -195,76 +203,251 @@ export const FunctionComposer = ({
 		toggleConnectDialog(false)
 	}
 
+	const [signerAnchorEl, setSignerAnchorEl] = useState<null | HTMLElement>(null)
+	const signerMenuIsOpen = Boolean(signerAnchorEl)
+
+	const openSignerMenu = (event: MouseEvent<HTMLElement>) => {
+		setSignerAnchorEl(event.currentTarget)
+	}
+	const closeSignerMenu = () => {
+		setSignerAnchorEl(null)
+	}
+
+
+	const [importWalletIsOpen, toggleWalletImport] = useState(false)
+	const closeWalletImport = () => {
+		toggleWalletImport(false)
+	}
+
+
+	const createWallet = useCallback((key) => {
+		let keyString = key
+		keyString = keyString.trim()
+
+		let wallet = null
+		if (keyString.indexOf(' ') > -1) {
+			wallet = Wallet.fromMnemonic(key)
+		} else {
+			wallet = new Wallet(keyString)
+		}
+
+		if (!wallet) {
+			throw new Error('Cannot import wallet')
+		}
+
+		return wallet
+	}, [])
+
+	const [temporarySigner, setTemporarySigner] = useState(signer)
+	const [walletKey, setWalletKey] = useState('')
+	const importWallet = useCallback(() => {
+		try {
+			const wallet = createWallet(walletKey)
+			toggleWalletImport(false)
+			onSignerChange(temporarySigner, wallet)
+		} catch (err) {
+			setWalletKey('')
+			onError(err)
+		}
+	}, [walletKey, temporarySigner])
+
+	const selectSigner = useCallback((signer: Signer) => {
+		if (signer.id === 'key') {
+			if (walletKey === '') {
+				setTemporarySigner(signer)
+				toggleWalletImport(true)
+			} else {
+				const wallet = createWallet(walletKey)
+				onSignerChange(signer, wallet)
+			}
+
+		} else {
+			onSignerChange(signer, walletKey)
+		}
+	}, [walletKey])
+
 	return (<>
-		<Menu
-			anchorEl={historyAnchorEl}
-			open={open}
-			onClose={handleClose}
-			onClick={handleClose}
-			PaperProps={{
-				style: {
-					maxHeight: 200
-				},
-				elevation: 0,
-				sx: {
-					overflow: 'visible',
-					filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-					mt: 1.5,
-					'& .MuiAvatar-root': {
-						width: 32,
-						height: 32,
-						ml: -0.5,
-						mr: 1,
-					},
-					'&:before': {
-						content: '""',
-						display: 'block',
-						position: 'absolute',
-						top: 0,
-						right: 14,
-						width: 10,
-						height: 10,
-						bgcolor: 'background.paper',
-						transform: 'translateY(-50%) rotate(45deg)',
-						zIndex: 0,
-					},
-				},
-			}}
-			transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-			anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-		>
-			{history && history.map((entry, index) => (
-				<MenuItem key={index} onClick={() => {
-					openHistoryEntry(entry)
-				}}>
-					{entry.function} (ChainID: {entry.network})
-				</MenuItem>
-			))}
-		</Menu>
 
 		<br />
 		<br />
-		<Autocomplete
-			disablePortal
-			id='function'
-			fullWidth
-			options={functions}
-			getOptionLabel={(option) => option.name}
-			renderInput={(params) => <TextField {...params} required label='Function' helperText={
-				history.length > 0 && <>
-					Or browse from <Link sx={{ cursor: 'pointer' }} onClick={handleClick}>your history</Link>
-				</>
-			} />}
-			value={func}
-			onChange={(_, newValue: Function | null) => {
-				onFuncChange(newValue)
-			}}
-			inputValue={functionSearchText}
-			onInputChange={(_, newInputValue) => {
-				searchFunction(newInputValue)
-			}}
 
-		/>
+		<Grid container spacing={1}>
+			<Grid item
+				xs={10}>
+				<Autocomplete
+					disablePortal
+					id='function'
+					fullWidth
+					options={functions}
+					getOptionLabel={(option) => option.name}
+					renderInput={(params) => <TextField {...params} required label='Function' helperText={
+						history.length > 0 && <>
+							Or browse from <Link sx={{ cursor: 'pointer' }} onClick={openHistory}>your history</Link>
+						</>
+					} />}
+					value={func}
+					onChange={(_, newValue: Function | null) => {
+						onFuncChange(newValue)
+					}}
+					inputValue={functionSearchText}
+					onInputChange={(_, newInputValue) => {
+						searchFunction(newInputValue)
+					}}
+
+				/>
+
+
+				<Menu
+					anchorEl={historyAnchorEl}
+					open={historyIsOpen}
+					onClose={closeHistory}
+					onClick={closeHistory}
+					PaperProps={{
+						style: {
+							maxHeight: 200
+						},
+						elevation: 0,
+						sx: {
+							overflow: 'visible',
+							filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+							mt: 1.5,
+							'& .MuiAvatar-root': {
+								width: 32,
+								height: 32,
+								ml: -0.5,
+								mr: 1,
+							},
+							'&:before': {
+								content: '""',
+								display: 'block',
+								position: 'absolute',
+								top: 0,
+								right: 14,
+								width: 10,
+								height: 10,
+								bgcolor: 'background.paper',
+								transform: 'translateY(-50%) rotate(45deg)',
+								zIndex: 0,
+							},
+						},
+					}}
+					transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+					anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+				>
+					{history && history.map((entry, index) => (
+						<MenuItem key={index} onClick={() => {
+							openHistoryEntry(entry)
+						}}>
+							{entry.function} (ChainID: {entry.network})
+						</MenuItem>
+					))}
+				</Menu>
+
+			</Grid>
+			<Grid item
+				sx={{
+					textAlign: 'center'
+				}}
+				xs={2}>
+				<Tooltip arrow title={`Signer: ${signer.name}`}>
+					<Button onClick={openSignerMenu} sx={{
+						height: '56px'
+					}}>
+						<Avatar color='primary'>
+							{(() => {
+								const Icon = signer.icon
+								return (
+									<Icon sx={{ fontSize: 30 }} />
+								)
+							})()}
+						</Avatar>
+					</Button>
+
+				</Tooltip>
+				<Menu
+					anchorEl={signerAnchorEl}
+					open={signerMenuIsOpen}
+					onClose={closeSignerMenu}
+					onClick={closeSignerMenu}
+					PaperProps={{
+						elevation: 0,
+						sx: {
+							overflow: 'visible',
+							filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+							mt: 1.5,
+							'& .MuiAvatar-root': {
+								width: 32,
+								height: 32,
+								ml: -0.5,
+								mr: 1,
+							},
+							'&:before': {
+								content: '""',
+								display: 'block',
+								position: 'absolute',
+								top: 0,
+								right: 26,
+								width: 10,
+								height: 10,
+								bgcolor: 'background.paper',
+								transform: 'translateY(-50%) rotate(45deg)',
+								zIndex: 0,
+							},
+						},
+					}}
+					transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+					anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+				>
+					{signers.map(s => {
+						const Icon = s.icon
+
+						return (
+							<MenuItem key={s.id} selected={signer.id === s.id} onClick={() => {
+								selectSigner(s)
+							}}>
+								<ListItemIcon>
+									<Icon fontSize="small" />
+								</ListItemIcon> {s.name}
+							</MenuItem>
+						)
+					})}
+
+				</Menu>
+
+				<Dialog open={importWalletIsOpen} onClose={closeWalletImport}>
+					<DialogTitle>Import Wallet</DialogTitle>
+					<DialogContent>
+						<DialogContentText>
+							You could import wallet from a private key, or from mnemonic words.
+
+							<br />
+							<br />
+							<Alert severity="info">Your data <b>WILL NOT BE</b> saved anywhere</Alert>
+							<br />
+						</DialogContentText>
+						<TextField
+							autoFocus
+							type='password'
+							label="Private key / Nnemonic words"
+							fullWidth
+							value={walletKey}
+							onChange={event => setWalletKey(event.target.value)}
+						/>
+					</DialogContent>
+					<DialogActions sx={{
+						marginRight: '18px',
+						marginBottom: '10px'
+					}}>
+						<Button onClick={closeWalletImport}>Cancel</Button>
+						<Button
+							variant='contained' onClick={importWallet}>Import</Button>
+					</DialogActions>
+				</Dialog>
+			</Grid>
+		</Grid>
+
+
+
 
 		{func && func.inputs.map((input, index) => (
 			<Fragment key={`${input.name}-${index}`}>
@@ -399,32 +582,6 @@ export const FunctionComposer = ({
 										Connect to Wallet
 									</LoadingButton>
 
-									<Dialog onClose={closeConnectDialog} open={connectDialogIsOpen}>
-										<DialogTitle>Connect to your wallet</DialogTitle>
-										<List sx={{ pt: 0 }}>
-											{signers.map((s) => {
-												if (s.id === 'anonymous') return null
-
-												const Icon = s.icon
-												return (
-													<ListItem key={s.id} selected={signer.id === s.id} button onClick={() => {
-														onSignerChange(s)
-														closeConnectDialog()
-													}}>
-														<ListItemAvatar>
-															<Avatar>
-																<Icon />
-															</Avatar>
-														</ListItemAvatar>
-														<ListItemText primary={s.name} secondary={s.description}/>
-													</ListItem>
-												)
-											})}
-										</List>
-										<DialogActions>
-											<Button onClick={closeConnectDialog}>Cancel</Button>
-										</DialogActions>
-									</Dialog>
 								</Fragment>
 							)
 						}
@@ -434,6 +591,32 @@ export const FunctionComposer = ({
 				})()}
 
 
+				<Dialog onClose={closeConnectDialog} open={connectDialogIsOpen}>
+					<DialogTitle>Connect to your wallet</DialogTitle>
+					<List sx={{ pt: 0 }}>
+						{signers.map((s) => {
+							if (s.id === 'anonymous') return null
+
+							const Icon = s.icon
+							return (
+								<ListItem key={s.id} selected={signer.id === s.id} button onClick={() => {
+									selectSigner(s)
+									closeConnectDialog()
+								}}>
+									<ListItemAvatar>
+										<Avatar>
+											<Icon />
+										</Avatar>
+									</ListItemAvatar>
+									<ListItemText primary={s.name} secondary={s.description} />
+								</ListItem>
+							)
+						})}
+					</List>
+					<DialogActions>
+						<Button onClick={closeConnectDialog}>Cancel</Button>
+					</DialogActions>
+				</Dialog>
 			</Box>
 
 			{isReading && <>
@@ -470,5 +653,8 @@ export const FunctionComposer = ({
 				</Box>
 			</>}
 		</>}
+
+
+
 	</>)
 }

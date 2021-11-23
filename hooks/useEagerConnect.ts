@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { network, injected } from 'config/connectors'
+import { anonymous, injected } from 'config/connectors'
 import { useWeb3React } from '@web3-react/core'
 
 export const useEagerConnect = () => {
@@ -15,7 +15,7 @@ export const useEagerConnect = () => {
           setTried(true)
         })
       } else {
-				activate(network, undefined, true).catch(() => {
+				activate(anonymous, undefined, true).catch(() => {
 					setTried(true)
 				})
 

@@ -6,7 +6,7 @@ import { Function } from 'types/Function'
 import { Chain } from 'types/Chain'
 import { useWeb3React } from '@web3-react/core'
 import { chains } from 'config/chains'
-import { network, injected, walletconnect, walletlink, binance } from 'config/connectors'
+import { anonymous, injected, walletconnect, walletlink, binance, key } from 'config/connectors'
 import { Contract } from '@ethersproject/contracts'
 import { Web3Provider } from '@ethersproject/providers'
 import { isAddress } from '@ethersproject/address'
@@ -138,10 +138,14 @@ export default function Page() {
 
 		const connector = onConnector || w3React.connector
 
-		if (connector === network) {
-			log('switch w3 chain on network');
+		if (connector === anonymous) {
+			log('switch w3 chain on anonymous');
 
-			network.changeChainId(Number(chain.chainId))
+			anonymous.changeChainId(Number(chain.chainId))
+		}else if (connector === key) {
+			log('switch w3 chain on key');
+
+			key.changeChainId(Number(chain.chainId))
 		} else if (
 			connector === injected
 			// || connector === binance
@@ -195,8 +199,8 @@ export default function Page() {
 			if (willFallback) {
 				// throw new Error(`Unable to switch into ${chain.name}`)
 				log('connector not support switching chain -> fallback to anonymous')
-				network.changeChainId(Number(chain.chainId))
-				await w3React.activate(network, undefined, true)
+				anonymous.changeChainId(Number(chain.chainId))
+				await w3React.activate(anonymous, undefined, true)
 
 				enqueueSnackbar('Fallback to anonymous signer', {
 					variant: 'warning',
@@ -225,7 +229,7 @@ export default function Page() {
 
 				selectChain(chain)
 
-				if (w3React.connector === network) {
+				if (w3React.connector === anonymous) {
 					setSigner(signers[0])
 				} else if (w3React.connector === injected) {
 					setSigner(signers[1])
@@ -235,6 +239,8 @@ export default function Page() {
 					setSigner(signers[3])
 				} else if (w3React.connector === binance) {
 					setSigner(signers[4])
+				} else if (w3React.connector === key) {
+					setSigner(signers[5])
 				}
 			}
 		}
@@ -245,7 +251,7 @@ export default function Page() {
 
 	useEffect(() => {
 		warn('w3 connector change', w3React.connector)
-		if (w3React.connector === network) {
+		if (w3React.connector === anonymous) {
 			setSigner(signers[0])
 		} else if (w3React.connector === injected) {
 			setSigner(signers[1])
@@ -255,6 +261,8 @@ export default function Page() {
 			setSigner(signers[3])
 		} else if (w3React.connector === binance) {
 			setSigner(signers[4])
+		} else if (w3React.connector === key) {
+			setSigner(signers[5])
 		}
 	}, [
 		w3React.connector
@@ -383,20 +391,32 @@ export default function Page() {
 	const [address, setAddress] = useState('')
 	const [paramsAreLocked, toggleParamsLock] = useState<boolean>(false)
 
-	const selectSigner = useCallback(async (signer: Signer) => {
+	const selectSigner = useCallback(async (signer: Signer, data?: any) => {
 		try {
 			warn('select signer', signer.id, selectedChain)
 			if (signer.id === 'anonymous') {
-				if (await network.getChainId() !== selectedChain?.chainId) {
-					log('signer change, diff chain -> switch')
-					await switchW3Chain(selectedChain as Chain, network)
+				if (await anonymous.getChainId() !== selectedChain?.chainId) {
+					log('anonymous signer change, diff chain -> switch')
+					await switchW3Chain(selectedChain as Chain, anonymous)
 				}
-				log('switched -> activate network')
-				await w3React.activate(network, undefined, true)
+				log('anonymous switched -> activate anonymous')
+				await w3React.activate(anonymous, undefined, true)
+			} else if (signer.id === 'key') {
+				if (!data) {
+					showError('Invalid Wallet')
+				} else {
+					key.setWallet(data)
+					if (await key.getChainId() !== selectedChain?.chainId) {
+						log('key signer change, diff chain -> switch')
+						await switchW3Chain(selectedChain as Chain, key)
+					}
+					log('key switched -> activate key')
+					await w3React.activate(key, undefined, true)
+				}
 			} else if (signer.id === 'browser') {
 				if (await injected.getChainId() !== selectedChain?.chainId) {
 					try {
-						log('signer change, diff chain -> switch')
+						log('browser signer change, diff chain -> switch')
 						await switchW3Chain(selectedChain as Chain, injected)
 					} catch (err) {
 						showError(err)
@@ -409,8 +429,8 @@ export default function Page() {
 				await w3React.activate(walletlink, undefined, true)
 			} else if (signer.id === 'binance') {
 				await w3React.activate(binance, undefined, true)
-			} else {
-				throw new Error('Importing Private Key / Mnemonic is disabled for now')
+			} else if (signer.id === 'key') {
+				await w3React.activate(key, undefined, true)
 			}
 		} catch (err) {
 			showError(err)
@@ -635,13 +655,19 @@ export default function Page() {
 
 			toggleReading(true)
 
-
+			let providerOrSigner: any = w3React.library
+			if (w3React?.connector === key) {
+				const wallet = key.getWallet()
+				let walletWithProvider = wallet?.connect(w3React?.library as Web3Provider)
+				providerOrSigner = walletWithProvider
+			} else {
+				providerOrSigner = w3React?.library?.getSigner()
+			}
 
 			const readContract = new Contract(
 				address,
 				abi,
-				// w3React.library
-				(w3React?.connector === network) ? w3React.library : w3React?.library?.getSigner()
+				providerOrSigner
 			)
 
 			recordEntry({
@@ -708,60 +734,71 @@ export default function Page() {
 
 			toggleWriting(true)
 
+			let providerOrSigner: any = w3React.library
+
+			if (w3React?.connector === anonymous) {
+				throw new Error('Please connect to your wallet')
+			} 
+			
+			if (w3React?.connector === key) {
+				const wallet = key.getWallet()
+				let walletWithProvider = wallet?.connect(w3React?.library as Web3Provider)
+				providerOrSigner = walletWithProvider
+			} else {
+				providerOrSigner = w3React?.library?.getSigner()
+			}
+
+
 			const writeContract = new Contract(
 				address,
 				abi,
-				// w3React.library
-				w3React.library.getSigner()
+				providerOrSigner
 			)
 
-			if (w3React.connector === network) {
-				showError('Please connect to your wallet')
-			} else {
-
-				recordEntry({
-					abi: abi,
-					network: selectedChain?.chainId as number,
-					address,
-					function: selectedFunction?.name as string,
-					args: functionArgs,
-					eth: functionEth
-				})
+			recordEntry({
+				abi: abi,
+				network: selectedChain?.chainId as number,
+				address,
+				function: selectedFunction?.name as string,
+				args: functionArgs,
+				eth: functionEth
+			})
 
 
-				const writeResult = await callWeb3Function(
-					writeContract as Contract,
-					selectedFunction as Function,
-					functionArgs,
-					functionEth
-				)
+			const writeResult = await callWeb3Function(
+				writeContract as Contract,
+				selectedFunction as Function,
+				functionArgs,
+				functionEth
+			)
 
-				writeResult.type = 'write'
+			writeResult.type = 'write'
 
-				enqueueSnackbar(`Data sent successfully`, {
-					variant: 'success',
-				})
+			enqueueSnackbar(`Data sent successfully`, {
+				variant: 'success',
+			})
 
 
-				setResult({
-					type: 'write',
-					data: writeResult
-				})
-				toggleResultDialog(true)
+			setResult({
+				type: 'write',
+				data: writeResult
+			})
+			toggleResultDialog(true)
 
-				writeResult.waitResult = await writeResult.wait()
+			writeResult.waitResult = await writeResult.wait()
 
 
 
-				setResult({
-					type: 'write',
-					data: writeResult
-				})
-				toggleResultDialog(true)
+			setResult({
+				type: 'write',
+				data: writeResult
+			})
+			toggleResultDialog(true)
 
 
-				toggleWriting(false)
-			}
+			toggleWriting(false)
+			
+
 
 		} catch (err: any) {
 			toggleWriting(false)
@@ -890,8 +927,6 @@ export default function Page() {
 									address={address}
 									onAddressChange={setAddress}
 
-									signer={signer}
-									onSignerChange={selectSigner}
 								/>
 
 
@@ -913,7 +948,7 @@ export default function Page() {
 									write={write}
 									isWriting={isWriting}
 									toggleWriting={toggleWriting}
-									canWrite={w3React && w3React.connector != network}
+									canWrite={w3React && w3React.connector != anonymous}
 
 
 									signer={signer}
@@ -926,6 +961,7 @@ export default function Page() {
 									openHistoryEntry={openHistoryEntry}
 
 
+									onError={showError}
 								/>
 
 							</> : <>

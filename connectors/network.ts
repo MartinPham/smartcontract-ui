@@ -1,7 +1,7 @@
 import { ConnectorUpdate } from '@web3-react/types'
 import { AbstractConnector } from '@web3-react/abstract-connector'
-import invariant from 'tiny-invariant'
 import { log } from 'utils/logger'
+import { Wallet } from '@ethersproject/wallet'
 
 // taken from ethers.js, compatible interface with web3 provider
 type AsyncSendable = {
@@ -79,31 +79,41 @@ class MiniRpcProvider implements AsyncSendable {
 }
 
 interface NetworkConnectorArguments {
-  urls: { [chainId: number]: string }
-  defaultChainId?: number
+  urls: { [chainId: number]: string },
+	supportedChainIds: number[],
+  defaultChainId: number,
+	wallet?: Wallet
 }
 
 export class NetworkConnector extends AbstractConnector {
   private readonly providers: { [chainId: number]: MiniRpcProvider }
   private currentChainId: number
+  private urls: { [chainId: number]: string }
+	private wallet?: Wallet
 
-  constructor({ urls, defaultChainId }: NetworkConnectorArguments) {
-    invariant(defaultChainId || Object.keys(urls).length === 1, 'defaultChainId is a required argument with >1 url')
-    super({ supportedChainIds: Object.keys(urls).map((k): number => Number(k)) })
+  constructor({ urls, supportedChainIds, defaultChainId, wallet }: NetworkConnectorArguments) {
+    super({ supportedChainIds })
 
-    this.currentChainId = defaultChainId || Number(Object.keys(urls)[0])
-    this.providers = Object.keys(urls).reduce<{ [chainId: number]: MiniRpcProvider }>((accumulator, chainId) => {
-      accumulator[Number(chainId)] = new MiniRpcProvider(Number(chainId), urls[Number(chainId)])
-      return accumulator
-    }, {})
+    this.urls = urls
+    this.currentChainId = defaultChainId
+    this.providers = []
+    this.wallet = wallet
   }
 
+	private getProviderForChainId(chainId: number): MiniRpcProvider {
+		if(!this.providers[chainId]) {
+			this.providers[chainId] = new MiniRpcProvider(Number(chainId), this.urls[chainId])
+		}
+
+		return this.providers[chainId]
+	}
+
   public async activate(): Promise<ConnectorUpdate> {
-    return { provider: this.providers[this.currentChainId], chainId: this.currentChainId, account: null }
+    return { provider: this.getProviderForChainId(this.currentChainId), chainId: this.currentChainId, account: null }
   }
 
   public async getProvider(): Promise<MiniRpcProvider> {
-    return this.providers[this.currentChainId]
+    return this.getProviderForChainId(this.currentChainId)
   }
 
   public async getChainId(): Promise<number> {
@@ -119,8 +129,15 @@ export class NetworkConnector extends AbstractConnector {
   }
 
   public changeChainId(chainId: number) {
-    invariant(Object.keys(this.providers).includes(chainId.toString()), `No url found for chainId ${chainId}`)
     this.currentChainId = chainId
-    this.emitUpdate({ provider: this.providers[this.currentChainId], chainId })
+    this.emitUpdate({ provider: this.getProviderForChainId(this.currentChainId), chainId })
+  }
+
+  public setWallet(wallet: Wallet) {
+    this.wallet = wallet
+  }
+
+  public getWallet(): Wallet | undefined {
+    return this.wallet
   }
 }
