@@ -139,7 +139,7 @@ const NumberTextField = ({
 }
 
 export const FunctionComposer = ({
-	selectedChain,
+	chain,
 	functions,
 	func,
 	onFuncChange,
@@ -164,7 +164,7 @@ export const FunctionComposer = ({
 
 	onError
 }: {
-	selectedChain: Chain,
+	chain: Chain,
 	functions: Function[],
 	func: Function | null | undefined,
 	onFuncChange: (func: Function | null | undefined) => void,
@@ -508,8 +508,8 @@ export const FunctionComposer = ({
 		{func && <>
 			{func.stateMutability === 'payable' && <>
 				<NumberTextField
-					label={`${selectedChain.nativeCurrency.symbol} Amount`}
-					value={eth + 'e' + selectedChain.nativeCurrency.decimals}
+					label={`${chain.nativeCurrency.symbol} Amount`}
+					value={eth + 'e' + chain.nativeCurrency.decimals}
 					onChange={(value) => {
 						setEth(value)
 					}}

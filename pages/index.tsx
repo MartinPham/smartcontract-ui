@@ -142,7 +142,7 @@ export default function Page() {
 			log('switch w3 chain on anonymous');
 
 			anonymous.changeChainId(Number(chain.chainId))
-		}else if (connector === key) {
+		} else if (connector === key) {
 			log('switch w3 chain on key');
 
 			key.changeChainId(Number(chain.chainId))
@@ -462,7 +462,7 @@ export default function Page() {
 			}
 		}
 
-		if(
+		if (
 			router.query.network
 			&& router.query.address
 			&& !router.query.json
@@ -738,8 +738,8 @@ export default function Page() {
 
 			if (w3React?.connector === anonymous) {
 				throw new Error('Please connect to your wallet')
-			} 
-			
+			}
+
 			if (w3React?.connector === key) {
 				const wallet = key.getWallet()
 				let walletWithProvider = wallet?.connect(w3React?.library as Web3Provider)
@@ -797,7 +797,7 @@ export default function Page() {
 
 
 			toggleWriting(false)
-			
+
 
 
 		} catch (err: any) {
@@ -931,7 +931,7 @@ export default function Page() {
 
 
 								<FunctionComposer
-									selectedChain={selectedChain as Chain}
+									chain={selectedChain as Chain}
 									functions={functions}
 
 									func={selectedFunction}
@@ -991,6 +991,7 @@ export default function Page() {
 			</Grid>
 
 			<ResultDialog
+				chain={selectedChain as Chain}
 				isOpen={resultDialogIsOpen}
 				onClose={() => {
 					toggleResultDialog(false)

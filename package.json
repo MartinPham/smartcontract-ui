@@ -35,7 +35,9 @@
     "use-immer": "^0.6.0"
   },
   "scripts": {
+    "predev": "node scripts/buildChainList",
     "dev": "next",
+    "prebuild": "node scripts/buildChainList",
     "build": "next build && next export",
     "prod": "next start"
   },

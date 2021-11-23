@@ -117,6 +117,7 @@ export const SourceBrowser = ({
 						onAbiImport(abi)
 	
 						toggleImportDialog(false)
+						toggleImportStatus(false)
 					} catch (error) {
 						toggleImportStatus(false)
 						onError('Invalid ABI received: ' + data)
