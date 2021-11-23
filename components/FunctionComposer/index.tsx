@@ -1,15 +1,13 @@
-import { ReactElement, Fragment, forwardRef, useState, useCallback, useEffect, MouseEvent } from 'react'
+import { ReactElement, Fragment, useState, useCallback, MouseEvent } from 'react'
 import Autocomplete from '@mui/material/Autocomplete'
 import TextField from '@mui/material/TextField'
 import Box from '@mui/material/Box'
-import InputAdornment from '@mui/material/InputAdornment'
 import { Function } from 'types/Function'
 import { Chain } from 'types/Chain'
 import PageviewIcon from '@mui/icons-material/Pageview'
 import CreateIcon from '@mui/icons-material/Create'
 import LoadingButton from '@mui/lab/LoadingButton'
 import LockIcon from '@mui/icons-material/Lock'
-import NumberFormat from 'react-number-format'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Link from '@mui/material/Link'
@@ -33,110 +31,8 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import Grid from '@mui/material/Grid'
 import { Wallet } from '@ethersproject/wallet'
 import Alert from '@mui/material/Alert'
-
-interface NumberFormatComponentProps {
-	onChange: (event: { target: { name: string; value: string } }) => void;
-	name: string;
-}
-
-const NumberFormatComponent = forwardRef<NumberFormat, NumberFormatComponentProps>(
-	function NumberFormatCustom(props, ref) {
-		const { onChange, ...other } = props
-
-		return (
-			<NumberFormat
-				{...other}
-				getInputRef={ref}
-				onValueChange={(values) => {
-					onChange({
-						target: {
-							name: props.name,
-							value: values.value,
-						},
-					})
-				}}
-				thousandSeparator
-				isNumericString
-			/>
-		)
-	},
-)
-
-const NumberTextField = ({
-	label,
-	value,
-	decimalDisabled = false,
-	onChange,
-	...props
-}: {
-	label: string,
-	value: any,
-	decimalDisabled?: boolean,
-	onChange: (event: any) => void
-}) => {
-	const [number, setNumber] = useState('')
-	const [decimal, setDecimal] = useState('')
-
-
-	const triggerOnChange = useCallback((_number, _decimal) => {
-		const value = `${_number}e${_decimal || 0}`
-		onChange(value)
-	}, [])
-
-	useEffect(() => {
-		const valueString = String(value || '')
-		const valueComponents = valueString.split('e')
-
-		setNumber(valueComponents[0])
-		setDecimal(valueComponents[1] || '0')
-	}, [value])
-
-
-
-	return (
-		<TextField
-			// type='number'
-			margin='normal'
-			fullWidth
-			label={label}
-			// value={value}
-			value={number}
-			onChange={event => {
-				setNumber(event.target.value)
-				triggerOnChange(event.target.value, decimal)
-			}}
-			InputProps={{
-				inputComponent: NumberFormatComponent as any,
-
-				endAdornment: (
-					<>
-						<TextField
-							sx={{
-								height: '10px',
-								marginTop: '-24px',
-								width: '160px'
-							}}
-							disabled={decimalDisabled}
-							type='number'
-							margin='normal'
-							size='small'
-							value={decimal}
-							onChange={event => {
-								setDecimal(event.target.value)
-
-								triggerOnChange(number, event.target.value)
-							}}
-							InputProps={{
-								startAdornment: <InputAdornment position='start'>x 10 ^ </InputAdornment>,
-							}}
-						/>
-					</>
-				),
-			}}
-			{...props}
-		/>
-	)
-}
+import { NumberTextField } from 'components/NumberTextField'
+import { QrTextField } from 'components/QrTextField'
 
 export const FunctionComposer = ({
 	chain,
@@ -448,7 +344,9 @@ export const FunctionComposer = ({
 
 
 
-
+		<div style={{
+			clear: 'both',
+		}}>
 		{func && func.inputs.map((input, index) => (
 			<Fragment key={`${input.name}-${index}`}>
 				{(() => {
@@ -467,11 +365,13 @@ export const FunctionComposer = ({
 					}
 					if (input.type.endsWith('[]')) {
 						return (
+							<Tooltip arrow title='Multiple value, you can separate each value by new line'>
 							<TextField
 								multiline
 								margin='normal'
 								{...props}
 							/>
+							</Tooltip>
 						)
 					} else if (
 						input.type.startsWith('int') ||
@@ -482,14 +382,44 @@ export const FunctionComposer = ({
 						// const value = args[input.name] || ''
 
 						return (
-							<NumberTextField
-								{...props}
-								onChange={(value) => {
-									setArgs((draft: any) => {
-										draft[input.name] = value
-									})
-								}}
-							/>
+							<Tooltip arrow title={<>
+								Numberic value<br />You can use exp. box, example: 5 x 10^3 = 5000
+							</>}>
+								<span style={{
+									float: 'left',
+									width: '100%',
+									clear: 'both',
+								}}>
+								<NumberTextField
+									{...props}
+									onChange={(value: any) => {
+										setArgs((draft: any) => {
+											draft[input.name] = value
+										})
+									}}
+									margin='normal'
+									fullWidth
+								/>
+								</span>
+							</Tooltip>
+						)
+					} else if (input.type === 'address') {
+						return (
+							<Tooltip arrow title='An Ethereum address (0x....)'>
+								<QrTextField
+									margin='normal'
+									{...props}
+								/>
+							</Tooltip>
+						)
+					} else if (input.type === 'string') {
+						return (
+							<Tooltip arrow title='Text-based value'>
+								<TextField
+									margin='normal'
+									{...props}
+								/>
+							</Tooltip>
 						)
 					} else {
 						return (
@@ -504,13 +434,15 @@ export const FunctionComposer = ({
 				<br />
 			</Fragment>
 		))}
-
+		</div>
 		{func && <>
 			{func.stateMutability === 'payable' && <>
 				<NumberTextField
+				margin='normal'
+				fullWidth
 					label={`${chain.nativeCurrency.symbol} Amount`}
 					value={eth + 'e' + chain.nativeCurrency.decimals}
-					onChange={(value) => {
+					onChange={(value: any) => {
 						setEth(value)
 					}}
 					decimalDisabled={true}
@@ -519,8 +451,7 @@ export const FunctionComposer = ({
 				<br />
 			</>}
 
-			<br />
-			<Box sx={{ display: 'flex' }}>
+			<Box sx={{ display: 'flex', clear: 'both', marginTop: '10px' }}>
 				{(() => {
 					const output: ReactElement[] = []
 

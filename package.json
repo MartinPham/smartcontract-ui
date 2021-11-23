@@ -31,12 +31,13 @@
     "react": "latest",
     "react-dom": "latest",
     "react-number-format": "^4.8.0",
+    "react-qr-reader": "^2.2.1",
     "react-syntax-highlighter": "^15.4.5",
     "use-immer": "^0.6.0"
   },
   "scripts": {
     "predev": "node scripts/buildChainList",
-    "dev": "next",
+    "dev": "(local-ssl-proxy --source 3443 --target 3000) & next",
     "prebuild": "node scripts/buildChainList",
     "build": "next build && next export",
     "prod": "next start"
@@ -47,6 +48,7 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@types/react-syntax-highlighter": "^13.5.2",
+    "local-ssl-proxy": "^1.3.0",
     "typescript": "latest"
   }
 }

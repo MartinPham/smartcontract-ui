@@ -11,6 +11,7 @@ import MenuItem from '@mui/material/MenuItem'
 import Tooltip from '@mui/material/Tooltip'
 import ShowerOutlinedIcon from '@mui/icons-material/ShowerOutlined';
 
+import { QrTextField } from 'components/QrTextField'
 
 export const ContractSelector = ({
 	chain,
@@ -48,7 +49,7 @@ export const ContractSelector = ({
 			<Grid item
 				xs={hasFaucet ? 9 : 12}
 				md={hasFaucet ? 10 : 12}
-				>
+			>
 				<Autocomplete
 					disablePortal
 					id='chains'
@@ -140,7 +141,7 @@ export const ContractSelector = ({
 			</>}
 
 		</Grid>
-		<TextField
+		<QrTextField
 			margin='normal'
 			required
 			fullWidth
@@ -149,7 +150,7 @@ export const ContractSelector = ({
 			name='address'
 			autoComplete='off'
 			value={address}
-			onChange={event => onAddressChange(event.target.value)}
+			onChange={(event: any) => onAddressChange(event.target.value)}
 		/>
 	</>)
 }
