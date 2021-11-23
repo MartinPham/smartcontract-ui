@@ -47,8 +47,10 @@ export default function Page() {
 			message = error['data']['message']
 		} else if (error['message']) {
 			message = error['message']
+		} else if (error['error']) {
+			message = error['error']
 		} else {
-			message = error as string
+			message = String(error)
 		}
 		enqueueSnackbar(message, {
 			variant: 'error',
@@ -56,7 +58,7 @@ export default function Page() {
 	}, [])
 
 	// import 
-	const importAbi = useCallback((abi) => {
+	const selectAbi = useCallback((abi) => {
 		toggleParamsLock(false)
 
 		setSource(JSON.stringify(abi))
@@ -80,7 +82,7 @@ export default function Page() {
 	const openHistoryEntry = useCallback((entry: HistoryEntry) => {
 
 
-		const newFunctions = importAbi(entry.abi)
+		const newFunctions = selectAbi(entry.abi)
 
 		const chain = chains.find(chain => chain.chainId == entry.network)
 		if (chain) {
@@ -263,6 +265,8 @@ export default function Page() {
 
 	// handle JSON
 	const [url, setUrl] = useState('')
+
+
 	useEffect(() => {
 		if (router.query.json) {
 
@@ -438,6 +442,14 @@ export default function Page() {
 			}
 		}
 
+		if(
+			router.query.network
+			&& router.query.address
+			&& !router.query.json
+		) {
+			toggleImportDialog(true)
+		}
+
 		if (shoudlLockParams) {
 			log('lock params')
 			toggleParamsLock(true)
@@ -517,6 +529,7 @@ export default function Page() {
 	const [functionArgs, setFunctionArguments] = useImmer<{ [name: string]: any }>({})
 	const [functionEth, setFunctionEth] = useState<string>('')
 	const [abi, setAbi] = useState<any[]>([])
+	const [importDialogIsOpen, toggleImportDialog] = useState(false)
 
 	// global.functionArgs = functionArgs
 	// global.functionEth = functionEth
@@ -854,7 +867,10 @@ export default function Page() {
 									address={address}
 									onAddressChange={setAddress}
 
-									onAbiImport={importAbi}
+									onAbiImport={selectAbi}
+
+									importDialogIsOpen={importDialogIsOpen}
+									toggleImportDialog={toggleImportDialog}
 								/>
 
 								<br />

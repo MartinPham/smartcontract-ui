@@ -49,7 +49,6 @@ if(chainIds.length === 0) {
 }
 
 
-
 export {
 	chains,
 	chainIds,

@@ -237,7 +237,7 @@ export const FunctionComposer = ({
 				<MenuItem key={index} onClick={() => {
 					openHistoryEntry(entry)
 				}}>
-					{entry.function}
+					{entry.function} (ChainID: {entry.network})
 				</MenuItem>
 			))}
 		</Menu>
@@ -266,8 +266,8 @@ export const FunctionComposer = ({
 
 		/>
 
-		{func && func.inputs.map((input) => (
-			<Fragment key={`${input.name}`}>
+		{func && func.inputs.map((input, index) => (
+			<Fragment key={`${input.name}-${index}`}>
 				{(() => {
 					const props = {
 						fullWidth: true,

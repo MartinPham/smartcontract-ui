@@ -1,5 +1,6 @@
 import { useRef, MouseEvent, useState, useCallback } from 'react'
 import TextField from '@mui/material/TextField'
+import LoadingButton from '@mui/lab/LoadingButton'
 import IconButton from '@mui/material/IconButton'
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import Link from '@mui/material/Link'
@@ -33,7 +34,10 @@ export const SourceBrowser = ({
 	address,
 	onAddressChange,
 
-	onAbiImport
+	onAbiImport,
+
+	importDialogIsOpen,
+	toggleImportDialog
 }: {
 	onFileChange: (event: any) => void,
 	source: string,
@@ -52,6 +56,9 @@ export const SourceBrowser = ({
 	onAddressChange: (address: string) => void,
 
 	onAbiImport: (abi: any) => void,
+
+	importDialogIsOpen: boolean,
+	toggleImportDialog: (open: boolean) => void
 }) => {
 	const positionRef = useRef<{ x: number; y: number }>({
 		x: 0,
@@ -71,9 +78,10 @@ export const SourceBrowser = ({
 		popperRef
 	])
 
-	const [importDialogIsOpen, toggleImportDialog] = useState(false)
+	const [isImporting, toggleImportStatus] = useState(false)
 
 	const closeImportDialog = useCallback(() => {
+		toggleImportStatus(false)
 		toggleImportDialog(false)
 	}, [])
 
@@ -91,6 +99,8 @@ export const SourceBrowser = ({
 				if (jsonPath && url) {
 					let data = ''
 					try {
+						toggleImportStatus(true)
+
 						data = await (await fetch(url, {
 	
 						})).json()
@@ -108,6 +118,7 @@ export const SourceBrowser = ({
 	
 						toggleImportDialog(false)
 					} catch (error) {
+						toggleImportStatus(false)
 						onError('Invalid ABI received: ' + data)
 					}
 				}
@@ -185,7 +196,7 @@ export const SourceBrowser = ({
 					name='file'
 					autoComplete='off'
 					helperText={<>
-						Try an example <Link href='/?json=/Swap.json&address=0x7a250d5630b4cf539739df2c5dacb4c659f2488d&func=getAmountsOut&args.amountIn=0.1e18&args.path=0x1f9840a85d5af5bf1d1762f925bdaddc4201f984, 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&network=1'>here</Link>, <Link href='/?json=/HelloWorld.json'>here</Link> or <Link sx={{ cursor: 'pointer' }} onClick={() => {
+						Try an example <Link href='/?json=/Uniswap.json&address=0x7a250d5630b4cf539739df2c5dacb4c659f2488d&func=getAmountsOut&args.amountIn=0.1e18&args.path=0x1f9840a85d5af5bf1d1762f925bdaddc4201f984, 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&network=1'>here</Link>, <Link href='/?json=/HelloWorld.json'>here</Link> or <Link sx={{ cursor: 'pointer' }} onClick={() => {
 							toggleImportDialog(true)
 						}}>import it here</Link>
 					</>}
@@ -249,8 +260,8 @@ export const SourceBrowser = ({
 					marginBottom: '10px'
 				}}>
 					<Button onClick={closeImportDialog}>Cancel</Button>
-					<Button onClick={importAbi}
-						variant='contained'>Import</Button>
+					<LoadingButton loading={isImporting} onClick={importAbi}
+						variant='contained'>Import</LoadingButton>
 				</DialogActions>
 			</Dialog>
 		</>
