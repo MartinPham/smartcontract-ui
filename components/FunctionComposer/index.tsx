@@ -33,6 +33,7 @@ import { Wallet } from '@ethersproject/wallet'
 import Alert from '@mui/material/Alert'
 import { NumberTextField } from 'components/NumberTextField'
 import { QrTextField } from 'components/QrTextField'
+import { SlideUpTransition } from 'utils/transitions'
 
 export const FunctionComposer = ({
 	chain,
@@ -310,7 +311,7 @@ export const FunctionComposer = ({
 
 				</Menu>
 
-				<Dialog open={importWalletIsOpen} onClose={closeWalletImport}>
+				<Dialog TransitionComponent={SlideUpTransition} open={importWalletIsOpen} onClose={closeWalletImport}>
 					<DialogTitle>Import Wallet</DialogTitle>
 					<DialogContent>
 						<DialogContentText>
@@ -522,7 +523,7 @@ export const FunctionComposer = ({
 				})()}
 
 
-				<Dialog onClose={closeConnectDialog} open={connectDialogIsOpen}>
+				<Dialog TransitionComponent={SlideUpTransition} onClose={closeConnectDialog} open={connectDialogIsOpen}>
 					<DialogTitle>Connect to your wallet</DialogTitle>
 					<List sx={{ pt: 0 }}>
 						{signers.map((s) => {

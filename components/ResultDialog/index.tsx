@@ -1,12 +1,10 @@
-import { ReactElement, Ref, forwardRef, useCallback } from 'react'
+import { useCallback } from 'react'
 
 import Dialog from '@mui/material/Dialog'
 import Button from '@mui/material/Button'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
-import { TransitionProps } from '@mui/material/transitions'
-import Slide from '@mui/material/Slide'
 import { ReadResult, WriteResult, WriteEvent } from 'types/Result'
 
 import ListSubheader from '@mui/material/ListSubheader'
@@ -18,15 +16,7 @@ import LinearProgress from '@mui/material/LinearProgress'
 import copy from 'copy-to-clipboard'
 import { Chain } from 'types/Chain'
 import { BigNumber } from '@ethersproject/bignumber'
-
-const SlideUpTransition = forwardRef(function Transition(
-	props: TransitionProps & {
-		children: ReactElement<any, any>
-	},
-	ref: Ref<unknown>
-) {
-	return <Slide direction='up' ref={ref} {...props} />
-})
+import { SlideUpTransition } from 'utils/transitions'
 
 
 export const ResultDialog = ({

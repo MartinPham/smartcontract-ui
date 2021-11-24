@@ -19,6 +19,8 @@ import { query } from 'utils/jsonQuery'
 import Autocomplete from '@mui/material/Autocomplete'
 import { log } from 'utils/logger'
 
+import { SlideUpTransition } from 'utils/transitions'
+
 export const SourceBrowser = ({
 	onFileChange,
 	source,
@@ -206,7 +208,7 @@ export const SourceBrowser = ({
 
 			</Tooltip>
 
-			<Dialog open={importDialogIsOpen} onClose={closeImportDialog}>
+			<Dialog TransitionComponent={SlideUpTransition} open={importDialogIsOpen} onClose={closeImportDialog}>
 				<DialogTitle>Import SmartContract ABI</DialogTitle>
 				<DialogContent>
 					<DialogContentText>
