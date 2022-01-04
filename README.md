@@ -74,7 +74,7 @@ Straightforward, to interaction with a Smart Contract, you'd need to know:
 <b>Example:</b>
 Let's play with the [Uniswap Protocol](https://uniswap.org/): We'd like to understand how much <b>USDT</b> does <b>1 WETH</b> worth currently. 
 
-To archive it, we'd have to call the function [<b>getAmountsOut</b>](https://docs.uniswap.org/protocol/V2/reference/smart-contracts/library#getamountsout), on the [<b>Uniswap Router</b>](https://docs.uniswap.org/protocol/V2/reference/smart-contracts/router-02) contract, which was deployed on <b>Ethereum Mainnet</b>. You can try it [here](https://contract.mph.am/?json=/UniswapV2.json&address=0x7a250d5630b4cf539739df2c5dacb4c659f2488d&func=getAmountsOut&args.amountIn=1e18&args.path=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2,%200xdac17f958d2ee523a2206206994597c13d831ec7&network=1).
+To do it, we'd have to call the function [<b>getAmountsOut</b>](https://docs.uniswap.org/protocol/V2/reference/smart-contracts/library#getamountsout), on the [<b>Uniswap Router</b>](https://docs.uniswap.org/protocol/V2/reference/smart-contracts/router-02) contract, which was deployed on <b>Ethereum Mainnet</b>. You can try it [here](https://contract.mph.am/?json=/UniswapV2.json&address=0x7a250d5630b4cf539739df2c5dacb4c659f2488d&func=getAmountsOut&args.amountIn=1e18&args.path=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2,%200xdac17f958d2ee523a2206206994597c13d831ec7&network=1).
 
 ![Uniswap](./docs/uniswap.png)
 
