@@ -1,11 +1,17 @@
 name: Deploy to Pages
 
 env:
-  ASSET_PREFIX: '/smartcontract-ui/'
+  ASSET_PREFIX: '/'
   
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main-disabled ]
+    paths-ignore:
+      - '.gitlab-ci.yml'
+      - 'README.md'
+      - 'COPYING'
+      - 'docs/**'
+
 jobs:
   build-push:
     name: "Build & Push"

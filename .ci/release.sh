@@ -10,7 +10,6 @@ echo "[RELEASE] Pushing current working tree.."
 echo "[RELEASE] Pushed ($GIT_BRANCH/$GIT_COMMIT).."
 
 . $(dirname "$0")/build.sh
-if [ -z ${GITHUB_ACTOR+x} ]; then cp .gitlab-ci-manual.yml $BUILD_DIR/.gitlab-ci.yml; fi
 
 echo "[RELEASE] Syncing build files from $GIT_BUILD_BRANCH.."
 rm -rf $RELEASE_DIR

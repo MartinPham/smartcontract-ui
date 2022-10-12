@@ -8,6 +8,7 @@ const chainsAbiApi = {
 	3: `result https://api-ropsten.etherscan.io/api?module=contract&action=getabi&address={ADDRESS}&apikey=${ETHERSCAN_API_KEY}`,
 	4: `result https://api-rinkeby.etherscan.io/api?module=contract&action=getabi&address={ADDRESS}&apikey=${ETHERSCAN_API_KEY}`,
 	5: `result https://api-goerli.etherscan.io/api?module=contract&action=getabi&address={ADDRESS}&apikey=${ETHERSCAN_API_KEY}`,
+	11155111: `result https://api-sepolia.etherscan.io/api?module=contract&action=getabi&address={ADDRESS}&apikey=${ETHERSCAN_API_KEY}`,
 	10: `result https://api-optimistic.etherscan.io/api?module=contract&action=getabi&address={ADDRESS}&apikey=${ETHERSCAN_API_KEY}`,
 	42: `result https://api-kovan.etherscan.io/api?module=contract&action=getabi&address={ADDRESS}&apikey=${ETHERSCAN_API_KEY}`,
 	56: `result https://api.bscscan.com/api?module=contract&action=getabi&address={ADDRESS}&apikey=${BSCSCAN_API_KEY}`,
