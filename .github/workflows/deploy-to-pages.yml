@@ -1,0 +1,58 @@
+name: Deploy to Pages
+
+env:
+  ASSET_PREFIX: '/'
+  
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '.gitlab-ci.yml'
+      - 'README.md'
+      - 'COPYING'
+      - 'docs/**'
+
+jobs:
+  build-push:
+    name: "Build & Push"
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [lts/*]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install yarn
+      run: npm install -g yarn
+      
+    - name: Cache deps
+      uses: actions/cache@v2
+      with:
+        path: |
+          ./node_modules
+          ./.yarn
+          ./.next/cache
+        key: ${{ runner.os }}-modules-${{ hashFiles('./yarn.lock') }}
+        
+    - name: Build & Push
+      run: |
+        git config --global user.name $GITHUB_ACTOR
+        git config --global user.email $GITHUB_ACTOR@users.noreply.github.com
+        export NEXT_TELEMETRY_DISABLED=1
+
+        ./.ci/release.sh
+        
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: build
+        path: ./.build
