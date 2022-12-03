@@ -22,6 +22,8 @@ import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
 import { useSnackbar } from 'notistack'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
+import GitHubIcon from '@mui/icons-material/GitHub';
+import TwitterIcon from '@mui/icons-material/Twitter';
 import { SourceBrowser } from 'components/SourceBrowser'
 import { ContractSelector } from 'components/ContractSelector'
 import { FunctionComposer } from 'components/FunctionComposer'
@@ -974,14 +976,33 @@ export default function Page() {
 									}}>Reload</Button>
 								</Box>
 							</>}
-
-
-							<Typography sx={{ mt: 5 }} variant='body2' color='text.secondary' align='center'>
-								© Buns Enchantress - {' '}
-								<Link color='inherit' href='https://learn-solidity.com/' target="_blank">
-									0xBuns.xyz
+							<Typography sx={{ mt: 3 }} variant='body1' color='text.secondary' align='center'>
+								Buns Enchantress
+								<br />
+								<Link color='inherit' href='https://github.com/BunsDev' target="_blank">
+									<GitHubIcon />
+								</Link>
+								{'     | '}
+								<Link color='inherit' href='https://learn-solidity.com' target="_blank">
+									Learn Solidity
+								</Link>
+								{' |     '}
+								<Link color='inherit' href='https://twitter.com/0xBuns' target="_blank">
+									<TwitterIcon />
 								</Link>
 							</Typography>
+							{/* 							
+							Enchanted * 0xBuns
+								<Link href='https://twitter.com/0xBuns'>
+									<Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+c									</Avatar>
+								</Link>
+								<Link href='https://github.com/BunsDev/'>
+									<Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+										<GitHubIcon />
+									</Avatar>
+								</Link> 
+							*/}
 						</Box>
 					</Box>
 				</Grid>
