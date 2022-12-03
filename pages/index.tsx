@@ -829,7 +829,8 @@ export default function Page() {
 					md={6}
 					lg={7}
 					sx={{
-						backgroundImage: 'url(https://source.unsplash.com/featured/?crypto)',
+						// backgroundImage: 'url(https://source.unsplash.com/featured/?crypto)',
+						backgroundImage: 'url(https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8Y3J5cHRvfHx8fHx8MTY3MDAzODc3OQ&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1080)',
 						backgroundRepeat: 'no-repeat',
 						backgroundColor: (t) =>
 							t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
@@ -991,18 +992,6 @@ export default function Page() {
 									<TwitterIcon />
 								</Link>
 							</Typography>
-							{/* 							
-							Enchanted * 0xBuns
-								<Link href='https://twitter.com/0xBuns'>
-									<Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-c									</Avatar>
-								</Link>
-								<Link href='https://github.com/BunsDev/'>
-									<Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-										<GitHubIcon />
-									</Avatar>
-								</Link> 
-							*/}
 						</Box>
 					</Box>
 				</Grid>
