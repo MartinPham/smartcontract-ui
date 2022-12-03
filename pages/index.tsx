@@ -855,9 +855,9 @@ export default function Page() {
 								<AccountTreeIcon />
 							</Avatar>
 						</Link>
-						<Typography component='h1' variant='h5'>
+						{/* <Typography component='h1' variant='h5'>
 							Smart Contract UI
-						</Typography>
+						</Typography> */}
 						<Box component='div' sx={{
 							mt: 1,
 							width: '100%'
@@ -977,9 +977,9 @@ export default function Page() {
 
 
 							<Typography sx={{ mt: 5 }} variant='body2' color='text.secondary' align='center'>
-								© Martin Pham - {' '}
-								<Link color='inherit' href='https://mph.am/'>
-									mph.am
+								© Buns Enchantress - {' '}
+								<Link color='inherit' href='https://learn-solidity.com/' target="_blank">
+									0xBuns.xyz
 								</Link>
 							</Typography>
 						</Box>

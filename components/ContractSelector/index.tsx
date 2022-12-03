@@ -41,7 +41,7 @@ export const ContractSelector = ({
 		setFaucetAnchorEl(null)
 	}
 
-	const hasFaucet = chain && chain.faucets && chain.faucets.length > 0
+	const hasFaucet = chain && false //  chain && chain.faucets && chain.faucets.length > 0
 
 
 	return (<>

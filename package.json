@@ -2,6 +2,14 @@
   "name": "smartcontract-ui",
   "version": "0.0.1",
   "private": true,
+  "scripts": {
+    "predev": "node scripts/buildChainList",
+    "dev": "(local-ssl-proxy --source 3443 --target 3000) & next",
+    "prebuild": "node scripts/buildChainList",
+    "build": "next build && next export",
+    "prod": "next start",
+    "push": "yarn build && (git add -A ; git commit -m $MSG ; git push -f origin main)"
+  },
   "dependencies": {
     "@emotion/cache": "latest",
     "@emotion/react": "latest",
@@ -34,14 +42,6 @@
     "react-qr-reader": "^2.2.1",
     "react-syntax-highlighter": "^15.4.5",
     "use-immer": "^0.6.0"
-  },
-  "scripts": {
-    "predev": "node scripts/buildChainList",
-    "dev": "(local-ssl-proxy --source 3443 --target 3000) & next",
-    "prebuild": "node scripts/buildChainList",
-    "build": "next build && next export",
-    "prod": "next start",
-    "push": "yarn build && (git add -A ; git commit -m $MSG ; git push -f origin main)"
   },
   "devDependencies": {
     "@types/md5": "^2.3.1",

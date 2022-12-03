@@ -137,7 +137,7 @@ export const SourceBrowser = ({
 	return (
 		<>
 			<Tooltip
-				title="You can paste the SmartContract's ABI/Artifact code, an URL of this code, or browse for an ABI/Artiface file from your device."
+				title="Paste or browse for an ABI file."
 				arrow
 				PopperProps={{
 					popperRef,
@@ -195,17 +195,18 @@ export const SourceBrowser = ({
 					}}
 					fullWidth
 					id='file'
-					label='SmartContract ABI'
+					label='ABI'
 					name='file'
 					autoComplete='off'
 					helperText={<>
-						Try an example <Link href='/?json=/UniswapV2.json&address=0x7a250d5630b4cf539739df2c5dacb4c659f2488d&func=getAmountsOut&args.amountIn=0.1e18&args.path=0x1f9840a85d5af5bf1d1762f925bdaddc4201f984, 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&network=1'>here</Link>, <Link href='/?json=/HelloWorld.json'>here</Link> or <Link sx={{ cursor: 'pointer' }} onClick={() => {
-							toggleImportDialog(true)
-						}}>import it here</Link>
+						{/* Try an example 
+						<Link href='/?json=/UniswapV2.json&address=0x7a250d5630b4cf539739df2c5dacb4c659f2488d&func=getAmountsOut&args.amountIn=0.1e18&args.path=0x1f9840a85d5af5bf1d1762f925bdaddc4201f984, 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&network=1'>here</Link>, <Link href='/?json=/HelloWorld.json'>here</Link> or */}
+						 <Link sx={{ cursor: 'pointer' }} 
+						 onClick={() => { 
+							toggleImportDialog(true)}
+						}>Import from Contract</Link>
 					</>}
 				/>
-
-
 			</Tooltip>
 
 			<Dialog TransitionComponent={SlideUpTransition} open={importDialogIsOpen} onClose={closeImportDialog}>
